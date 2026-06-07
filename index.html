@@ -278,10 +278,17 @@
 
       // achievement logic
       let img = "";
+      /*
       if (data.count >= 32) img = "achievement4.jpg";
       else if (data.count >= 16) img = "achievement3.jpg";
       else if (data.count >= 8) img = "achievement2.jpg";
       else if (data.count >= 4) img = "achievement1.jpg";
+      */
+      if (data.count >= 32) img = "/static/achievements/achievement4.jpg";
+      else if (data.count >= 16) img = "/static/achievements/achievement3.jpg";
+      else if (data.count >= 8) img = "/static/achievements/achievement2.jpg";
+      else if (data.count >= 4) img = "/static/achievements/achievement1.jpg";
+
 
       if (img) {
         achievementImg.src = img;
