@@ -4,3 +4,4 @@ peewee
 pyjwt
 werkzeug
 gunicorn
+pillow
