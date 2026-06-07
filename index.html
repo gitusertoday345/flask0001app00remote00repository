@@ -3,14 +3,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>User Counter (Flask Version)</title>
+  <title>User Counter V02</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <style>
     :root {
       --bg: #f5f5f5;
-      --fg: #111111;
-      --card-bg: #ffffff;
+      --fg: #111;
+      --card-bg: #fff;
       --accent: #2563eb;
       --accent-hover: #1d4ed8;
       --border: #e5e7eb;
@@ -29,7 +29,7 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: system-ui, sans-serif;
     }
 
     body {
@@ -40,16 +40,16 @@
       align-items: center;
       justify-content: center;
       padding: 16px;
-      transition: background 0.2s ease, color 0.2s ease;
+      transition: background 0.2s, color 0.2s;
     }
 
     .app {
       width: 100%;
-      max-width: 420px;
+      max-width: 460px;
       border-radius: 16px;
       border: 1px solid var(--border);
       background: var(--card-bg);
-      padding: 20px 20px 24px;
+      padding: 20px;
       box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18);
       position: relative;
     }
@@ -62,14 +62,13 @@
     }
 
     .title {
-      font-size: 1.1rem;
+      font-size: 1.2rem;
       font-weight: 600;
     }
 
     .subtitle {
       font-size: 0.8rem;
       opacity: 0.7;
-      margin-top: 2px;
     }
 
     .dark-toggle {
@@ -93,18 +92,6 @@
       font-size: 0.85rem;
       font-weight: 600;
       margin-bottom: 8px;
-      opacity: 0.8;
-    }
-
-    .auth-form {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-top: 4px;
-    }
-
-    label {
-      font-size: 0.8rem;
       opacity: 0.8;
     }
 
@@ -145,7 +132,7 @@
 
     .counter-card {
       margin-top: 12px;
-      padding: 14px 14px 16px;
+      padding: 14px;
       border-radius: 12px;
       border: 1px dashed var(--border);
       display: none;
@@ -169,29 +156,24 @@
       cursor: pointer;
     }
 
-    .status {
-      margin-top: 8px;
-      font-size: 0.75rem;
-      min-height: 16px;
-      opacity: 0.8;
+    .avatar-box {
+      margin-top: 12px;
+      text-align: center;
     }
 
-    .status.error {
-      color: #ef4444;
-      opacity: 1;
+    .avatar-img {
+      width: 40px;
+      height: 40px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      object-fit: cover;
+      display: inline-block;
     }
 
-    .status.success {
-      color: #22c55e;
-      opacity: 1;
-    }
-
-    .top-right-status {
-      position: absolute;
-      top: 10px;
-      right: 14px;
-      font-size: 0.7rem;
-      opacity: 0.7;
+    .achievement-img {
+      width: 80px;
+      margin-top: 10px;
+      display: none;
     }
 
     .logout-btn {
@@ -201,6 +183,17 @@
       cursor: pointer;
       opacity: 0.7;
     }
+
+    .status {
+      margin-top: 8px;
+      font-size: 0.75rem;
+      min-height: 16px;
+      opacity: 0.8;
+    }
+
+    .status.error { color: #ef4444; opacity: 1; }
+    .status.success { color: #22c55e; opacity: 1; }
+
   </style>
 </head>
 
@@ -208,8 +201,8 @@
   <div class="app">
     <div class="header">
       <div>
-        <div class="title">Personal Tap Counter</div>
-        <div class="subtitle">Each user has their own counter stored on your Flask server.</div>
+        <div class="title">Tap Counter V02</div>
+        <div class="subtitle">Now with avatars + achievements</div>
       </div>
       <button id="darkToggle" class="dark-toggle">
         <span>🌙</span>
@@ -217,28 +210,26 @@
       </button>
     </div>
 
-    <div id="authStatus" class="top-right-status">Not signed in</div>
-
-    <div class="section" id="authSection">
+    <div id="authSection" class="section">
       <div class="section-title">Sign in or create account</div>
-      <form id="authForm" class="auth-form">
-        <div>
-          <label>Email</label>
-          <input id="email" type="email" placeholder="you@example.com" required />
-        </div>
-        <div>
-          <label>Password</label>
-          <input id="password" type="password" placeholder="••••••••" required />
-        </div>
-        <button id="signInBtn" class="primary" type="submit">Sign in</button>
-        <button id="signUpBtn" class="secondary" type="button">Create new account</button>
-      </form>
+      <input id="email" type="email" placeholder="you@example.com" />
+      <input id="password" type="password" placeholder="••••••••" />
+      <button id="loginBtn" class="primary">Sign in</button>
+      <button id="signupBtn" class="secondary">Create account</button>
     </div>
 
-    <div class="section counter-card" id="counterCard">
-      <div class="counter-label">Your personal tap count</div>
-      <div id="counterValue" class="counter-value">0</div>
+    <div id="counterCard" class="counter-card">
+      <div class="avatar-box">
+        <img id="avatarImg" class="avatar-img" src="" alt="avatar" />
+        <input id="avatarInput" type="file" accept="image/*" style="margin-top:8px;" />
+        <button id="uploadAvatarBtn" class="secondary">Upload Avatar</button>
+      </div>
+
+      <div class="counter-value" id="counterValue">0</div>
       <button id="tapBtn" class="tap-button">Tap +1</button>
+
+      <img id="achievementImg" class="achievement-img" src="" alt="achievement" />
+
       <div class="logout-btn" id="logoutBtn">Sign out</div>
     </div>
 
@@ -246,156 +237,80 @@
   </div>
 
   <script>
-    //const API = "http://localhost:5000";
     const API = "https://flask0001app00remote00repository.onrender.com";
 
-    // -------------------------
-    // DARK MODE
-    // -------------------------
-    const darkToggleBtn = document.getElementById("darkToggle");
-    const darkLabel = document.getElementById("darkLabel");
-
-    function applyTheme(theme) {
-      if (theme === "dark") {
-        document.body.classList.add("dark");
-        darkLabel.textContent = "Light";
-        darkToggleBtn.firstElementChild.textContent = "☀️";
-      } else {
-        document.body.classList.remove("dark");
-        darkLabel.textContent = "Dark";
-        darkToggleBtn.firstElementChild.textContent = "🌙";
-      }
-    }
-
-    applyTheme(localStorage.getItem("theme") || "light");
-
-    darkToggleBtn.addEventListener("click", () => {
-      const next = document.body.classList.contains("dark") ? "light" : "dark";
-      localStorage.setItem("theme", next);
-      applyTheme(next);
-    });
-
-    // -------------------------
-    // UI ELEMENTS
-    // -------------------------
     const authSection = document.getElementById("authSection");
     const counterCard = document.getElementById("counterCard");
     const counterValueEl = document.getElementById("counterValue");
     const statusEl = document.getElementById("status");
-    const authStatusEl = document.getElementById("authStatus");
+    const avatarImg = document.getElementById("avatarImg");
+    const achievementImg = document.getElementById("achievementImg");
 
-    function setStatus(msg, type = "") {
+    function setStatus(msg, type="") {
       statusEl.textContent = msg;
       statusEl.className = "status " + type;
-      console.log("[STATUS]", msg, type);
     }
 
-    function showSignedOut() {
-      authSection.style.display = "block";
-      counterCard.style.display = "none";
-      authStatusEl.textContent = "Not signed in";
-      console.log("[UI] showSignedOut");
+    function getToken() { return localStorage.getItem("token"); }
+    function setToken(t) { localStorage.setItem("token", t); }
+    function clearToken() { localStorage.removeItem("token"); }
+
+    function authHeaders() {
+      const t = getToken();
+      return t ? { "Authorization": "Bearer " + t } : {};
     }
 
     function showSignedIn() {
       authSection.style.display = "none";
       counterCard.style.display = "block";
-      authStatusEl.textContent = "Signed in";
-      console.log("[UI] showSignedIn");
     }
 
-    // -------------------------
-    // TOKEN HELPERS
-    // -------------------------
-    function getToken() {
-      const t = localStorage.getItem("token");
-      console.log("[TOKEN] getToken =", t);
-      return t;
+    function showSignedOut() {
+      authSection.style.display = "block";
+      counterCard.style.display = "none";
     }
 
-    function setToken(t) {
-      console.log("[TOKEN] setToken =", t);
-      localStorage.setItem("token", t);
-    }
-
-    function clearToken() {
-      console.log("[TOKEN] clearToken");
-      localStorage.removeItem("token");
-    }
-
-    function authHeaders() {
-      const token = getToken();
-      const headers = token ? { "Authorization": "Bearer " + token } : {};
-      console.log("[HEADERS]", headers);
-      return headers;
-    }
-
-    // -------------------------
-    // LOAD COUNTER
-    // -------------------------
     async function loadCounter() {
-      console.log("[COUNTER] loadCounter start");
       const res = await fetch(`${API}/counter`, { headers: authHeaders() });
-      console.log("[COUNTER] /counter status", res.status);
-
-      if (!res.ok) {
-        const text = await res.text();
-        console.log("[COUNTER] error body", text);
-        setStatus("Error loading counter", "error");
-        return;
-      }
-
+      if (!res.ok) return;
       const data = await res.json();
-      console.log("[COUNTER] data", data);
       counterValueEl.textContent = data.count;
-      setStatus("Counter ready", "success");
+
+      // achievement logic
+      let img = "";
+      if (data.count >= 32) img = "achievement4.jpg";
+      else if (data.count >= 16) img = "achievement3.jpg";
+      else if (data.count >= 8) img = "achievement2.jpg";
+      else if (data.count >= 4) img = "achievement1.jpg";
+
+      if (img) {
+        achievementImg.src = img;
+        achievementImg.style.display = "block";
+      } else {
+        achievementImg.style.display = "none";
+      }
     }
 
-    // -------------------------
-    // TAP BUTTON
-    // -------------------------
-    document.getElementById("tapBtn").addEventListener("click", async () => {
-      console.log("[TAP] click");
+    document.getElementById("tapBtn").onclick = async () => {
       const res = await fetch(`${API}/counter`, {
         method: "POST",
         headers: authHeaders()
       });
-      console.log("[TAP] /counter POST status", res.status);
-
-      if (!res.ok) {
-        const text = await res.text();
-        console.log("[TAP] error body", text);
-        setStatus("Error updating counter", "error");
-        return;
-      }
-
+      if (!res.ok) return;
       const data = await res.json();
-      console.log("[TAP] data", data);
       counterValueEl.textContent = data.count;
       setStatus("Tap recorded", "success");
-    });
+      loadCounter();
+    };
 
-    // -------------------------
-    // LOGOUT
-    // -------------------------
-    document.getElementById("logoutBtn").addEventListener("click", () => {
-      console.log("[LOGOUT] click");
+    document.getElementById("logoutBtn").onclick = () => {
       clearToken();
       showSignedOut();
-      setStatus("Signed out", "success");
-    });
+    };
 
-    // -------------------------
-    // LOGIN
-    // -------------------------
-    document.getElementById("authForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-
+    document.getElementById("loginBtn").onclick = async () => {
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
-
-      console.log("[LOGIN] submit", { email });
-      setStatus("Signing in...");
 
       const res = await fetch(`${API}/login`, {
         method: "POST",
@@ -403,35 +318,20 @@
         body: JSON.stringify({ email, password })
       });
 
-      console.log("[LOGIN] /login status", res.status);
-
       if (!res.ok) {
-        const errText = await res.text();
-        console.log("[LOGIN] error body", errText);
-        let err;
-        try { err = JSON.parse(errText); } catch { err = { error: errText }; }
-        setStatus("Sign-in failed: " + (err.error || res.statusText), "error");
+        setStatus("Login failed", "error");
         return;
       }
 
       const data = await res.json();
-      console.log("[LOGIN] data", data);
-
       setToken(data.token);
-
       showSignedIn();
-      await loadCounter();
-    });
+      loadCounter();
+    };
 
-    // -------------------------
-    // SIGNUP
-    // -------------------------
-    document.getElementById("signUpBtn").addEventListener("click", async () => {
+    document.getElementById("signupBtn").onclick = async () => {
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
-
-      console.log("[SIGNUP] click", { email });
-      setStatus("Creating account...");
 
       const res = await fetch(`${API}/signup`, {
         method: "POST",
@@ -439,56 +339,55 @@
         body: JSON.stringify({ email, password })
       });
 
-      console.log("[SIGNUP] /signup status", res.status);
+      if (!res.ok) {
+        setStatus("Signup failed", "error");
+        return;
+      }
 
-      const text = await res.text();
-      console.log("[SIGNUP] body", text);
+      setStatus("Account created. Sign in now.", "success");
+    };
+
+    document.getElementById("uploadAvatarBtn").onclick = async () => {
+      const file = document.getElementById("avatarInput").files[0];
+      if (!file) return;
+
+      const fd = new FormData();
+      fd.append("file", file);
+
+      const res = await fetch(`${API}/upload-avatar`, {
+        method: "POST",
+        headers: authHeaders(),
+        body: fd
+      });
 
       if (!res.ok) {
-        let err;
-        try { err = JSON.parse(text); } catch { err = { error: text }; }
-        setStatus("Sign-up failed: " + (err.error || res.statusText), "error");
+        setStatus("Avatar upload failed", "error");
         return;
       }
 
-      setStatus("Account created. You can now sign in.", "success");
-    });
+      const data = await res.json();
+      avatarImg.src = data.url;
+      setStatus("Avatar updated", "success");
+    };
 
-    // -------------------------
-    // AUTO LOGIN CHECK
-    // -------------------------
     async function init() {
-      console.log("[INIT] start");
       const token = getToken();
-      if (!token) {
-        console.log("[INIT] no token, signed out");
-        showSignedOut();
-        return;
-      }
+      if (!token) return showSignedOut();
 
-      console.log("[INIT] token exists, checking /session");
       const res = await fetch(`${API}/session`, { headers: authHeaders() });
-      console.log("[INIT] /session status", res.status);
+      const data = await res.json();
 
-      const text = await res.text();
-      console.log("[INIT] /session body", text);
-
-      let data;
-      try { data = JSON.parse(text); } catch { data = {}; }
-
-      if (data.logged_in) {
-        console.log("[INIT] logged_in true", data);
-        showSignedIn();
-        await loadCounter();
-      } else {
-        console.log("[INIT] logged_in false, clearing token");
+      if (!data.logged_in) {
         clearToken();
-        showSignedOut();
+        return showSignedOut();
       }
+
+      showSignedIn();
+      loadCounter();
     }
 
     init();
   </script>
 </body>
 </html>
-```
+
