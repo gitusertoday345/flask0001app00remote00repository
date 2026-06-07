@@ -1,0 +1,6 @@
+flask
+flask-cors
+peewee
+pyjwt
+werkzeug
+gunicorn
