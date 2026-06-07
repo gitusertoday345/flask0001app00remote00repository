@@ -185,5 +185,5 @@ def increment_counter():
 # RUN
 # -----------------------------
 if __name__ == "__main__":
-    logging.info("Starting Flask server on http://localhost:5000")
+    logging.info("Starting Flask server on https://flask0001app00remote00repository.onrender.com")
     app.run(debug=True)
