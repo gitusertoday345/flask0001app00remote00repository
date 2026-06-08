@@ -11,7 +11,8 @@ from PIL import Image
 # -----------------------------
 # CONFIG
 # -----------------------------
-SECRET_KEY = "super-secret-key-change-this"
+#SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key-change-in-prod")
+SECRET_KEY = os.environ.get("SECRET_KEY", "fjfFGdfDFdfDFUWYPXNMFJjudGgthjoqyfbcbalfyDHXNBYhabvfc")
 DATABASE = "counter.db"
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -32,6 +33,14 @@ db = SqliteDatabase(DATABASE)
 
 
 # -----------------------------
+# STATIC ROUTE (Fix for Render)
+# -----------------------------
+@app.route("/static/<path:filename>")
+def static_files(filename):
+    return app.send_static_file(filename)
+
+
+# -----------------------------
 # MODELS
 # -----------------------------
 class BaseModel(Model):
@@ -42,7 +51,7 @@ class BaseModel(Model):
 class User(BaseModel):
     email = CharField(unique=True)
     password_hash = CharField()
-    profile_pic = CharField(null=True)  # path to 40x40 avatar
+    profile_pic = CharField(null=True)
 
 
 class Counter(BaseModel):
@@ -75,8 +84,7 @@ def get_user_from_token():
     token = auth.split(" ", 1)[1]
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-        user = User.get_or_none(User.id == payload["user_id"])
-        return user
+        return User.get_or_none(User.id == payload["user_id"])
     except Exception as e:
         logging.error(f"Token decode error: {e}")
         return None
@@ -117,7 +125,11 @@ def login():
         return jsonify({"error": "Invalid credentials"}), 401
 
     token = create_token(user.id)
-    return jsonify({"token": token, "email": user.email}), 200
+    return jsonify({
+        "token": token,
+        "email": user.email,
+        "profile_pic": user.profile_pic
+    }), 200
 
 
 @app.get("/session")
@@ -183,11 +195,15 @@ def upload_avatar():
         filepath = os.path.join(AVATAR_DIR, filename)
         img.save(filepath, format="JPEG")
 
-        url_path = f"/static/avatars/{filename}"
+        # FULL URL FIX
+        base = request.host_url.rstrip("/")
+        url_path = f"{base}/static/avatars/{filename}"
+
         user.profile_pic = url_path
         user.save()
 
         return jsonify({"url": url_path}), 200
+
     except Exception as e:
         logging.error(f"Avatar upload error: {e}")
         return jsonify({"error": "Avatar processing failed"}), 500
@@ -197,4 +213,5 @@ def upload_avatar():
 # RUN
 # -----------------------------
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, host="0.0.0.0")
+

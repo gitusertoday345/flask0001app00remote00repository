@@ -1,4 +1,4 @@
-
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,7 +16,7 @@
       --border: #e5e7eb;
     }
 
-    body.dark {
+    :root.dark {
       --bg: #020617;
       --fg: #e5e7eb;
       --card-bg: #020617;
@@ -118,6 +118,10 @@
       cursor: pointer;
     }
 
+    button.primary:hover {
+      background: var(--accent-hover);
+    }
+
     button.secondary {
       margin-top: 4px;
       width: 100%;
@@ -154,6 +158,10 @@
       font-size: 1rem;
       font-weight: 600;
       cursor: pointer;
+    }
+
+    .tap-button:hover {
+      background: var(--accent-hover);
     }
 
     .avatar-box {
@@ -193,7 +201,6 @@
 
     .status.error { color: #ef4444; opacity: 1; }
     .status.success { color: #22c55e; opacity: 1; }
-
   </style>
 </head>
 
@@ -245,8 +252,10 @@
     const statusEl = document.getElementById("status");
     const avatarImg = document.getElementById("avatarImg");
     const achievementImg = document.getElementById("achievementImg");
+    const darkToggle = document.getElementById("darkToggle");
+    const darkLabel = document.getElementById("darkLabel");
 
-    function setStatus(msg, type="") {
+    function setStatus(msg, type = "") {
       statusEl.textContent = msg;
       statusEl.className = "status " + type;
     }
@@ -276,22 +285,14 @@
       const data = await res.json();
       counterValueEl.textContent = data.count;
 
-      // achievement logic
       let img = "";
-      /*
-      if (data.count >= 32) img = "achievement4.jpg";
-      else if (data.count >= 16) img = "achievement3.jpg";
-      else if (data.count >= 8) img = "achievement2.jpg";
-      else if (data.count >= 4) img = "achievement1.jpg";
-      */
       if (data.count >= 32) img = "/static/achievements/achievement4.jpg";
       else if (data.count >= 16) img = "/static/achievements/achievement3.jpg";
       else if (data.count >= 8) img = "/static/achievements/achievement2.jpg";
       else if (data.count >= 4) img = "/static/achievements/achievement1.jpg";
 
-
       if (img) {
-        achievementImg.src = img;
+        achievementImg.src = API + img;
         achievementImg.style.display = "block";
       } else {
         achievementImg.style.display = "none";
@@ -303,7 +304,10 @@
         method: "POST",
         headers: authHeaders()
       });
-      if (!res.ok) return;
+      if (!res.ok) {
+        setStatus("Tap failed", "error");
+        return;
+      }
       const data = await res.json();
       counterValueEl.textContent = data.count;
       setStatus("Tap recorded", "success");
@@ -313,6 +317,7 @@
     document.getElementById("logoutBtn").onclick = () => {
       clearToken();
       showSignedOut();
+      setStatus("Signed out", "success");
     };
 
     document.getElementById("loginBtn").onclick = async () => {
@@ -333,6 +338,7 @@
       const data = await res.json();
       setToken(data.token);
       showSignedIn();
+      setStatus("Signed in", "success");
       loadCounter();
     };
 
@@ -373,28 +379,84 @@
       }
 
       const data = await res.json();
-      avatarImg.src = data.url;
+      let url = data.url;
+
+      // If backend returns a relative path like "/static/avatars/...", prepend API
+      if (url && url.startsWith("/")) {
+        url = API + url;
+      }
+
+      avatarImg.src = url;
       setStatus("Avatar updated", "success");
     };
 
     async function init() {
       const token = getToken();
-      if (!token) return showSignedOut();
+      if (!token) {
+        showSignedOut();
+        return;
+      }
 
       const res = await fetch(`${API}/session`, { headers: authHeaders() });
+      if (!res.ok) {
+        clearToken();
+        showSignedOut();
+        return;
+      }
+
       const data = await res.json();
 
       if (!data.logged_in) {
         clearToken();
-        return showSignedOut();
+        showSignedOut();
+        return;
       }
 
       showSignedIn();
+      if (data.profile_pic) {
+        let url = data.profile_pic;
+        if (url.startsWith("/")) {
+          url = API + url;
+        }
+        avatarImg.src = url;
+      }
       loadCounter();
     }
+
+    // Dark mode toggle using :root.dark (works better on older iOS Safari)
+    function applyDarkMode(isDark) {
+      if (isDark) {
+        document.documentElement.classList.add("dark");
+        darkLabel.textContent = "Light";
+      } else {
+        document.documentElement.classList.remove("dark");
+        darkLabel.textContent = "Dark";
+      }
+    }
+
+    function getStoredTheme() {
+      return localStorage.getItem("theme") || "light";
+    }
+
+    function setStoredTheme(theme) {
+      localStorage.setItem("theme", theme);
+    }
+
+    darkToggle.onclick = () => {
+      const current = getStoredTheme();
+      const next = current === "dark" ? "light" : "dark";
+      setStoredTheme(next);
+      applyDarkMode(next === "dark");
+    };
+
+    // Initialize theme + app
+    (function initTheme() {
+      const theme = getStoredTheme();
+      applyDarkMode(theme === "dark");
+    })();
 
     init();
   </script>
 </body>
 </html>
-
+```
