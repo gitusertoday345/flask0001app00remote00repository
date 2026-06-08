@@ -1,4 +1,3 @@
-
 import os
 import datetime
 import logging
@@ -11,9 +10,14 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from PIL import Image
 
 # -----------------------------
+# ADMIN CONFIG (hard‑coded)
+# -----------------------------
+ADMIN_EMAIL = "admin@example.com"      # ← change to your real admin email
+ADMIN_PASSWORD = "SuperSecret123"      # ← change to your real admin password
+
+# -----------------------------
 # CONFIG
 # -----------------------------
-#SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key-change-in-prod")
 SECRET_KEY = "fjfFGdfDFdfDFUWYPXNMFJjudGgthjoqyfbcbalfyDHXNBYhabvfc"
 DATABASE = "counter.db"
 
@@ -86,7 +90,13 @@ def get_user_from_token():
     token = auth.split(" ", 1)[1]
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-        return User.get_or_none(User.id == payload["user_id"])
+        uid = payload["user_id"]
+        if uid == -1:
+            # admin pseudo‑user
+            class AdminObj:
+                id = -1
+            return AdminObj()
+        return User.get_or_none(User.id == uid)
     except Exception as e:
         logging.error(f"Token decode error: {e}")
         return None
@@ -122,13 +132,22 @@ def login():
     email = data.get("email", "").strip().lower()
     password = data.get("password", "")
 
+    # ---- ADMIN LOGIN CHECK ----
+    if email == ADMIN_EMAIL and password == ADMIN_PASSWORD:
+        token = create_token(-1)  # admin user_id = -1
+        return jsonify({
+            "token": token,
+            "email": ADMIN_EMAIL,
+            "admin": True
+        }), 200
+    # ---- END ADMIN LOGIN ----
+
     user = User.get_or_none(User.email == email)
     if not user or not check_password_hash(user.password_hash, password):
         return jsonify({"error": "Invalid credentials"}), 401
 
     token = create_token(user.id)
 
-    # Add cache‑busting to avatar
     profile_pic = None
     if user.profile_pic:
         profile_pic = f"{user.profile_pic}?v={int(time.time())}"
@@ -143,10 +162,10 @@ def login():
 @app.get("/session")
 def session_check():
     user = get_user_from_token()
-    if not user:
+    if not user or getattr(user, "id", None) == -1:
+        # admin does not use /session in normal app
         return jsonify({"logged_in": False}), 200
 
-    # Add cache‑busting
     profile_pic = None
     if user.profile_pic:
         profile_pic = f"{user.profile_pic}?v={int(time.time())}"
@@ -164,7 +183,7 @@ def session_check():
 @app.get("/counter")
 def get_counter():
     user = get_user_from_token()
-    if not user:
+    if not user or getattr(user, "id", None) == -1:
         return jsonify({"error": "Unauthorized"}), 401
 
     counter = Counter.get(Counter.user == user)
@@ -174,7 +193,7 @@ def get_counter():
 @app.post("/counter")
 def increment_counter():
     user = get_user_from_token()
-    if not user:
+    if not user or getattr(user, "id", None) == -1:
         return jsonify({"error": "Unauthorized"}), 401
 
     counter = Counter.get(Counter.user == user)
@@ -190,7 +209,7 @@ def increment_counter():
 @app.post("/upload-avatar")
 def upload_avatar():
     user = get_user_from_token()
-    if not user:
+    if not user or getattr(user, "id", None) == -1:
         return jsonify({"error": "Unauthorized"}), 401
 
     if "file" not in request.files:
@@ -204,11 +223,11 @@ def upload_avatar():
         img = Image.open(file.stream).convert("RGB")
         img = img.resize((40, 40))
 
-        filename = f"user_{user.id}.jpg"
+        ts = int(time.time())
+        filename = f"user_{user.id}_{ts}.jpg"
         filepath = os.path.join(AVATAR_DIR, filename)
         img.save(filepath, format="JPEG")
 
-        # FULL URL + cache‑busting
         base = request.host_url.rstrip("/")
         url_path = f"{base}/static/avatars/{filename}?v={int(time.time())}"
 
@@ -220,6 +239,43 @@ def upload_avatar():
     except Exception as e:
         logging.error(f"Avatar upload error: {e}")
         return jsonify({"error": "Avatar processing failed"}), 500
+
+
+# -----------------------------
+# ROUTES: ADMIN
+# -----------------------------
+@app.get("/admin/users")
+def admin_users():
+    admin = get_user_from_token()
+    if not admin or getattr(admin, "id", None) != -1:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    data = []
+    for u in User.select():
+        c = Counter.get_or_none(Counter.user == u)
+        data.append({
+            "id": u.id,
+            "email": u.email,
+            "count": c.count if c else 0
+        })
+
+    return jsonify(data), 200
+
+
+@app.delete("/admin/delete/<int:user_id>")
+def admin_delete(user_id):
+    admin = get_user_from_token()
+    if not admin or getattr(admin, "id", None) != -1:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    u = User.get_or_none(User.id == user_id)
+    if not u:
+        return jsonify({"error": "User not found"}), 404
+
+    Counter.delete().where(Counter.user == u).execute()
+    u.delete_instance()
+
+    return jsonify({"message": "User deleted"}), 200
 
 
 # -----------------------------
