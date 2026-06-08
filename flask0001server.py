@@ -1,7 +1,9 @@
+
 import os
 import datetime
 import logging
 import jwt
+import time
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from peewee import *
@@ -12,7 +14,7 @@ from PIL import Image
 # CONFIG
 # -----------------------------
 #SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key-change-in-prod")
-SECRET_KEY = os.environ.get("SECRET_KEY", "fjfFGdfDFdfDFUWYPXNMFJjudGgthjoqyfbcbalfyDHXNBYhabvfc")
+SECRET_KEY = "fjfFGdfDFdfDFUWYPXNMFJjudGgthjoqyfbcbalfyDHXNBYhabvfc"
 DATABASE = "counter.db"
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -125,10 +127,16 @@ def login():
         return jsonify({"error": "Invalid credentials"}), 401
 
     token = create_token(user.id)
+
+    # Add cache‑busting to avatar
+    profile_pic = None
+    if user.profile_pic:
+        profile_pic = f"{user.profile_pic}?v={int(time.time())}"
+
     return jsonify({
         "token": token,
         "email": user.email,
-        "profile_pic": user.profile_pic
+        "profile_pic": profile_pic
     }), 200
 
 
@@ -138,10 +146,15 @@ def session_check():
     if not user:
         return jsonify({"logged_in": False}), 200
 
+    # Add cache‑busting
+    profile_pic = None
+    if user.profile_pic:
+        profile_pic = f"{user.profile_pic}?v={int(time.time())}"
+
     return jsonify({
         "logged_in": True,
         "email": user.email,
-        "profile_pic": user.profile_pic
+        "profile_pic": profile_pic
     }), 200
 
 
@@ -195,11 +208,11 @@ def upload_avatar():
         filepath = os.path.join(AVATAR_DIR, filename)
         img.save(filepath, format="JPEG")
 
-        # FULL URL FIX
+        # FULL URL + cache‑busting
         base = request.host_url.rstrip("/")
-        url_path = f"{base}/static/avatars/{filename}"
+        url_path = f"{base}/static/avatars/{filename}?v={int(time.time())}"
 
-        user.profile_pic = url_path
+        user.profile_pic = f"{base}/static/avatars/{filename}"
         user.save()
 
         return jsonify({"url": url_path}), 200
@@ -214,4 +227,3 @@ def upload_avatar():
 # -----------------------------
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0")
-

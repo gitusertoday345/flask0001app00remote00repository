@@ -385,7 +385,7 @@
       if (url && url.startsWith("/")) {
         url = API + url;
       }
-
+      url = url + "&t=" + Date.now();   // <— NEW LINE
       avatarImg.src = url;
       setStatus("Avatar updated", "success");
     };
