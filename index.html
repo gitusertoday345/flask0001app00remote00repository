@@ -1,463 +1,2113 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>User Counter V02</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-  <style>
-    :root {
-      --bg: #f5f5f5;
-      --fg: #111;
-      --card-bg: #fff;
-      --accent: #2563eb;
-      --accent-hover: #1d4ed8;
-      --border: #e5e7eb;
-    }
-
-    :root.dark {
-      --bg: #020617;
-      --fg: #e5e7eb;
-      --card-bg: #020617;
-      --accent: #38bdf8;
-      --accent-hover: #0ea5e9;
-      --border: #1f2937;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: system-ui, sans-serif;
-    }
-
-    body {
-      background: var(--bg);
-      color: var(--fg);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-      transition: background 0.2s, color 0.2s;
-    }
-
-    .app {
-      width: 100%;
-      max-width: 460px;
-      border-radius: 16px;
-      border: 1px solid var(--border);
-      background: var(--card-bg);
-      padding: 20px;
-      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18);
-      position: relative;
-    }
-
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-    }
-
-    .title {
-      font-size: 1.2rem;
-      font-weight: 600;
-    }
-
-    .subtitle {
-      font-size: 0.8rem;
-      opacity: 0.7;
-    }
-
-    .dark-toggle {
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      padding: 6px 10px;
-      font-size: 0.75rem;
-      background: transparent;
-      color: var(--fg);
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .section {
-      margin-top: 16px;
-    }
-
-    .section-title {
-      font-size: 0.85rem;
-      font-weight: 600;
-      margin-bottom: 8px;
-      opacity: 0.8;
-    }
-
-    input {
-      width: 100%;
-      padding: 8px 10px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      background: transparent;
-      color: var(--fg);
-      font-size: 0.85rem;
-    }
-
-    button.primary {
-      margin-top: 6px;
-      width: 100%;
-      padding: 9px 12px;
-      border-radius: 999px;
-      border: none;
-      background: var(--accent);
-      color: white;
-      font-size: 0.9rem;
-      font-weight: 600;
-      cursor: pointer;
-    }
-
-    button.primary:hover {
-      background: var(--accent-hover);
-    }
-
-    button.secondary {
-      margin-top: 4px;
-      width: 100%;
-      padding: 8px 12px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: transparent;
-      color: var(--fg);
-      font-size: 0.85rem;
-      cursor: pointer;
-    }
-
-    .counter-card {
-      margin-top: 12px;
-      padding: 14px;
-      border-radius: 12px;
-      border: 1px dashed var(--border);
-      display: none;
-    }
-
-    .counter-value {
-      font-size: 2.4rem;
-      font-weight: 700;
-      margin-bottom: 10px;
-    }
-
-    .tap-button {
-      width: 100%;
-      padding: 10px 12px;
-      border-radius: 999px;
-      border: none;
-      background: var(--accent);
-      color: white;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-    }
-
-    .tap-button:hover {
-      background: var(--accent-hover);
-    }
-
-    .avatar-box {
-      margin-top: 12px;
-      text-align: center;
-    }
-
-    .avatar-img {
-      width: 40px;
-      height: 40px;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      object-fit: cover;
-      display: inline-block;
-    }
-
-    .achievement-img {
-      width: 80px;
-      margin-top: 10px;
-      display: none;
-    }
-
-    .logout-btn {
-      margin-top: 8px;
-      font-size: 0.75rem;
-      text-align: right;
-      cursor: pointer;
-      opacity: 0.7;
-    }
-
-    .status {
-      margin-top: 8px;
-      font-size: 0.75rem;
-      min-height: 16px;
-      opacity: 0.8;
-    }
-
-    .status.error { color: #ef4444; opacity: 1; }
-    .status.success { color: #22c55e; opacity: 1; }
-  </style>
-</head>
-
-<body>
-  <div class="app">
-    <div class="header">
-      <div>
-        <div class="title">Tap Counter V02</div>
-        <div class="subtitle">Now with avatars + achievements</div>
-      </div>
-      <button id="darkToggle" class="dark-toggle">
-        <span>🌙</span>
-        <span id="darkLabel">Dark</span>
-      </button>
-    </div>
-
-    <div id="authSection" class="section">
-      <div class="section-title">Sign in or create account</div>
-      <input id="email" type="email" placeholder="you@example.com" />
-      <input id="password" type="password" placeholder="••••••••" />
-      <button id="loginBtn" class="primary">Sign in</button>
-      <button id="signupBtn" class="secondary">Create account</button>
-    </div>
-
-    <div id="counterCard" class="counter-card">
-      <div class="avatar-box">
-        <img id="avatarImg" class="avatar-img" src="" alt="avatar" />
-        <input id="avatarInput" type="file" accept="image/*" style="margin-top:8px;" />
-        <button id="uploadAvatarBtn" class="secondary">Upload Avatar</button>
-      </div>
-
-      <div class="counter-value" id="counterValue">0</div>
-      <button id="tapBtn" class="tap-button">Tap +1</button>
-
-      <img id="achievementImg" class="achievement-img" src="" alt="achievement" />
-
-      <div class="logout-btn" id="logoutBtn">Sign out</div>
-    </div>
-
-    <div id="status" class="status"></div>
-  </div>
-
-  <script>
-    const API = "https://flask0001app00remote00repository.onrender.com";
-
-    const authSection = document.getElementById("authSection");
-    const counterCard = document.getElementById("counterCard");
-    const counterValueEl = document.getElementById("counterValue");
-    const statusEl = document.getElementById("status");
-    const avatarImg = document.getElementById("avatarImg");
-    const achievementImg = document.getElementById("achievementImg");
-    const darkToggle = document.getElementById("darkToggle");
-    const darkLabel = document.getElementById("darkLabel");
-
-    function setStatus(msg, type = "") {
-      statusEl.textContent = msg;
-      statusEl.className = "status " + type;
-    }
-
-    function getToken() { return localStorage.getItem("token"); }
-    function setToken(t) { localStorage.setItem("token", t); }
-    function clearToken() { localStorage.removeItem("token"); }
-
-    function authHeaders() {
-      const t = getToken();
-      return t ? { "Authorization": "Bearer " + t } : {};
-    }
-
-    function showSignedIn() {
-      authSection.style.display = "none";
-      counterCard.style.display = "block";
-    }
-
-    function showSignedOut() {
-      authSection.style.display = "block";
-      counterCard.style.display = "none";
-    }
-
-    async function loadCounter() {
-      const res = await fetch(`${API}/counter`, { headers: authHeaders() });
-      if (!res.ok) return;
-      const data = await res.json();
-      counterValueEl.textContent = data.count;
-
-      let img = "";
-      if (data.count >= 32) img = "/static/achievements/achievement4.jpg";
-      else if (data.count >= 16) img = "/static/achievements/achievement3.jpg";
-      else if (data.count >= 8) img = "/static/achievements/achievement2.jpg";
-      else if (data.count >= 4) img = "/static/achievements/achievement1.jpg";
-
-      if (img) {
-        achievementImg.src = API + img;
-        achievementImg.style.display = "block";
-      } else {
-        achievementImg.style.display = "none";
-      }
-    }
-
-    document.getElementById("tapBtn").onclick = async () => {
-      const res = await fetch(`${API}/counter`, {
-        method: "POST",
-        headers: authHeaders()
-      });
-      if (!res.ok) {
-        setStatus("Tap failed", "error");
-        return;
-      }
-      const data = await res.json();
-      counterValueEl.textContent = data.count;
-      setStatus("Tap recorded", "success");
-      loadCounter();
-    };
-
-    document.getElementById("logoutBtn").onclick = () => {
-      clearToken();
-      showSignedOut();
-      setStatus("Signed out", "success");
-    };
-
-    document.getElementById("loginBtn").onclick = async () => {
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value;
-
-      const res = await fetch(`${API}/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password })
-      });
-
-      if (!res.ok) {
-        setStatus("Login failed", "error");
-        return;
-      }
-
-      const data = await res.json();
-      setToken(data.token);
-      showSignedIn();
-      setStatus("Signed in", "success");
-      loadCounter();
-    };
-
-    document.getElementById("signupBtn").onclick = async () => {
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value;
-
-      const res = await fetch(`${API}/signup`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password })
-      });
-
-      if (!res.ok) {
-        setStatus("Signup failed", "error");
-        return;
-      }
-
-      setStatus("Account created. Sign in now.", "success");
-    };
-
-    document.getElementById("uploadAvatarBtn").onclick = async () => {
-      const file = document.getElementById("avatarInput").files[0];
-      if (!file) return;
-
-      const fd = new FormData();
-      fd.append("file", file);
-
-      const res = await fetch(`${API}/upload-avatar`, {
-        method: "POST",
-        headers: authHeaders(),
-        body: fd
-      });
-
-      if (!res.ok) {
-        setStatus("Avatar upload failed", "error");
-        return;
-      }
-
-      const data = await res.json();
-      let url = data.url;
-
-      // If backend returns a relative path like "/static/avatars/...", prepend API
-      if (url && url.startsWith("/")) {
-        url = API + url;
-      }
-      url = url + "&t=" + Date.now();   // <— NEW LINE
-      avatarImg.src = url;
-      setStatus("Avatar updated", "success");
-    };
-
-    async function init() {
-      const token = getToken();
-      if (!token) {
-        showSignedOut();
-        return;
-      }
-
-      const res = await fetch(`${API}/session`, { headers: authHeaders() });
-      if (!res.ok) {
-        clearToken();
-        showSignedOut();
-        return;
-      }
-
-      const data = await res.json();
-
-      if (!data.logged_in) {
-        clearToken();
-        showSignedOut();
-        return;
-      }
-
-      showSignedIn();
-      if (data.profile_pic) {
-        let url = data.profile_pic;
-        if (url.startsWith("/")) {
-          url = API + url;
+    <meta charset="UTF-8">
+    <title>Unified Memory Games</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #fff;
+            color: #000;
         }
-        url = url + "&t=" + Date.now();   // ← NEW FIX
-        avatarImg.src = url;
-      }
-      loadCounter();
-    }
 
-    // Dark mode toggle using :root.dark (works better on older iOS Safari)
-    function applyDarkMode(isDark) {
-      if (isDark) {
-        document.documentElement.classList.add("dark");
-        darkLabel.textContent = "Light";
-      } else {
-        document.documentElement.classList.remove("dark");
-        darkLabel.textContent = "Dark";
-      }
-    }
+        body.dark {
+            background-color: #000;
+            color: #eee;
+        }
 
-    function getStoredTheme() {
-      return localStorage.getItem("theme") || "light";
-    }
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 16px;
+            background-color: #444;
+            color: white;
+        }
 
-    function setStoredTheme(theme) {
-      localStorage.setItem("theme", theme);
-    }
+        body.dark .top-bar {
+            background-color: #111;
+            color: #fff;
+        }
 
-    darkToggle.onclick = () => {
-      const current = getStoredTheme();
-      const next = current === "dark" ? "light" : "dark";
-      setStoredTheme(next);
-      applyDarkMode(next === "dark");
-    };
+        .main-buttons button {
+            margin-right: 8px;
+        }
 
-    // Initialize theme + app
-    (function initTheme() {
-      const theme = getStoredTheme();
-      applyDarkMode(theme === "dark");
-    })();
+        .screen {
+            display: none;
+            padding: 16px;
+        }
 
-    init();
-  </script>
+        .screen.active {
+            display: block;
+        }
+
+        .card {
+            max-width: 900px;
+            margin: 0 auto;
+            border: 1px solid #ccc;
+            padding: 16px;
+            border-radius: 4px;
+            background-color: #fafafa;
+        }
+
+        body.dark .card {
+            background-color: #222;
+            border-color: #666;
+        }
+
+        .row {
+            display: flex;
+            gap: 16px;
+        }
+
+        .col {
+            flex: 1;
+        }
+
+        label {
+            display: block;
+            margin-top: 8px;
+        }
+
+        input[type="number"],
+        input[type="text"],
+        textarea {
+            width: 100%;
+            box-sizing: border-box;
+            margin-top: 4px;
+        }
+
+        textarea {
+            height: 120px;
+        }
+
+        .stats-block {
+            white-space: pre-wrap;
+            font-family: monospace;
+            background-color: #f0f0f0;
+            padding: 8px;
+        }
+
+        body.dark .stats-block {
+            background-color: #333;
+        }
+
+        .set-game-container {
+            max-width: 600px;
+        }
+
+        .set-game-top {
+            margin-bottom: 8px;
+        }
+
+        .set-game-label {
+            font-weight: bold;
+        }
+
+        .color-square {
+            width: 35px;
+            height: 35px;
+            display: inline-block;
+            margin: 2px;
+            border: 1px solid #ccc;
+        }
+
+        .grid-square {
+            width: 20px;
+            height: 20px;
+            display: inline-block;
+            margin: 1px;
+            border: 1px solid #ccc;
+        }
+
+        .black { background-color: black; }
+        .white { background-color: white; }
+
+        #gridCurrentSequence {
+            text-align: center;
+        }
+
+        /* Visual untimed */
+        .vu-grid {
+            display: grid;
+            margin: 20px auto;
+            gap: 5px;
+            background-color: #ddd;
+            padding: 10px;
+            width: fit-content;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .vu-tile {
+            width: 35px;
+            height: 35px;
+            box-sizing: border-box;
+            background-color: #333;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .vu-tile.active {
+            background-color: white;
+        }
+
+        .vu-tile.correct {
+            background-color: green;
+        }
+
+        .vu-tile.wrong {
+            background-color: red;
+        }
+
+        .vu-grid.shrink {
+            transform: scale(0.95);
+        }
+
+        /* Important: do NOT change grid colors in dark mode */
+        body.dark .vu-grid {
+            background-color: #ddd;
+        }
+        body.dark .vu-tile {
+            background-color: #333;
+        }
+        body.dark .vu-tile.active {
+            background-color: white;
+        }
+        body.dark .vu-tile.correct {
+            background-color: green;
+        }
+        body.dark .vu-tile.wrong {
+            background-color: red;
+        }
+
+        /* Double memory */
+        .dm-display-container {
+            width: 150px;
+            height: 150px;
+            margin: 20px auto;
+            border: 2px solid black;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dm-symbol-text {
+            font-size: 48px;
+            color: white;
+            text-shadow: 2px 2px 4px black;
+            position: absolute;
+        }
+
+        .dm-buttons-container {
+            display: grid;
+            grid-template-columns: repeat(4, 80px);
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .dm-color-button,
+        .dm-symbol-button {
+            width: 80px;
+            height: 80px;
+            border: 1px solid #ccc;
+            cursor: pointer;
+            transition: transform 0.1s;
+            font-size: 24px;
+            background-color: #eee;
+            color: #000;
+        }
+
+        body.dark .dm-color-button,
+        body.dark .dm-symbol-button {
+            border-color: #666;
+            background-color: #222;
+            color: #eee;
+        }
+
+        .dm-color-button:active,
+        .dm-symbol-button:active {
+            transform: scale(0.9);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .small-note {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .section-title {
+            margin-top: 16px;
+            font-weight: bold;
+        }
+
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .inline {
+            display: inline-block;
+        }
+
+        .info {
+            margin: 10px;
+            font-size: 18px;
+        }
+
+        .game-over {
+            font-size: 24px;
+            color: #333;
+            margin: 20px;
+        }
+
+        body.dark .game-over {
+            color: #eee;
+        }
+
+        /* Dark mode for buttons and fields */
+        body.dark button,
+        body.dark input,
+        body.dark textarea,
+        body.dark select {
+            background-color: #000;
+            color: #fff;
+            border-color: #666;
+        }
+
+        body.dark input::placeholder,
+        body.dark textarea::placeholder {
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <div>
+            <strong>Unified Memory Games</strong>
+        </div>
+        <div class="main-buttons">
+            <button onclick="showScreen('main')">Main</button>
+            <button onclick="showScreen('generator')">Data generator</button>
+            <button onclick="showScreen('stats')">Statistics</button>
+            <button onclick="toggleDarkMode()">Toggle dark mode</button>
+        </div>
+    </div>
+
+    <!-- MAIN SCREEN -->
+    <div id="main" class="screen active">
+        <div class="card">
+            <h1>Main menu</h1>
+            <p>Select a game or open data generator/statistics.</p>
+            <div class="main-buttons">
+                <button onclick="startSetGame('color')">Color set</button>
+                <button onclick="startSetGame('symbol')">Symbol set</button>
+                <button onclick="startSetGame('numerical')">Numerical set</button>
+                <button onclick="startSetGame('grid')">Grid set</button>
+            </div>
+            <div class="main-buttons" style="margin-top:20px;">
+                <button onclick="showScreen('visualUntimed')">Visual untimed</button>
+                <button onclick="showScreen('doubleMemory')">Double memory</button>
+            </div>
+            <div style="margin-top:20px;">
+                <button onclick="showScreen('generator')">Open data generator</button>
+                <button onclick="showScreen('stats')">Open statistics</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DATA GENERATOR SCREEN -->
+    <div id="generator" class="screen">
+        <div class="card">
+            <h2>Data generator (set memory games)</h2>
+            <p class="small-note">
+                Settings here apply to all four set memory games (Color, Symbol, Numerical, Grid).
+                Data is generated only for set memory games.
+            </p>
+
+            <div class="row">
+                <div class="col">
+                    <label>Number of items (all sets)</label>
+                    <input type="number" id="gen_num_items" value="512" min="1">
+
+                    <label>Sequence length (all sets)</label>
+                    <input type="number" id="gen_sequence_length" value="9999" min="1">
+
+                    <label>Notify about errors (all games)</label>
+                    <input type="number" id="gen_notify_errors" value="3" min="1">
+
+                    <!-- NEW FIELD FOR VISUAL GAME -->
+                    <label>Number of wrong squares at error (visual)</label>
+                    <input type="number" id="gen_visual_wrong_squares" value="3" min="1">
+                </div>
+            </div>
+
+            <div class="row" style="margin-top:16px;">
+                <!-- COLOR SET -->
+                <div class="col">
+                    <h3>Color set</h3>
+                    <label>Items separator</label>
+                    <input type="text" id="color_separator" value=",">
+                    <label>Number of units per item</label>
+                    <input type="number" id="color_units" value="4" min="1">
+                    <label>Possible colors (comma-separated)</label>
+                    <input type="text" id="color_possible"
+                           value="black,yellow,pink,orange,red,green,blue,brown,gray,purple">
+                    <button onclick="generateColorSet()">Generate color items</button>
+                    <label>Generated data</label>
+                    <textarea id="color_output"></textarea>
+                </div>
+
+                <!-- SYMBOL SET -->
+                <div class="col">
+                    <h3>Symbol set</h3>
+                    <label>Items separator</label>
+                    <input type="text" id="symbol_separator" value=",">
+                    <label>Number of units per item</label>
+                    <input type="number" id="symbol_units" value="4" min="1">
+                    <label>Possible symbols (comma-separated)</label>
+                    <input type="text" id="symbol_possible"
+                           value="!,@,#,%,^,&,*,(),/,<>,?,:,+,=">
+                    <button onclick="generateSymbolSet()">Generate symbol items</button>
+                    <label>Generated data</label>
+                    <textarea id="symbol_output"></textarea>
+                </div>
+            </div>
+
+            <div class="row" style="margin-top:16px;">
+                <!-- NUMERICAL SET -->
+                <div class="col">
+                    <h3>Numerical set</h3>
+                    <label>Items separator</label>
+                    <input type="text" id="num_separator" value=",">
+                    <label>Number of digits per unit</label>
+                    <input type="number" id="num_units" value="4" min="1">
+                    <button onclick="generateNumericalSet()">Generate numerical items</button>
+                    <label>Generated data</label>
+                    <textarea id="num_output"></textarea>
+                </div>
+
+                <!-- GRID SET -->
+                <div class="col">
+                    <h3>Grid set</h3>
+                    <label>Items separator</label>
+                    <input type="text" id="grid_separator" value=",">
+                    <label>Side (length of each binary unit)</label>
+                    <input type="number" id="grid_side" value="5" min="1">
+                    <label>One's min (total 1s per item)</label>
+                    <input type="number" id="grid_ones_min" value="8" min="0">
+                    <label>One's max (total 1s per item)</label>
+                    <input type="number" id="grid_ones_max" value="9" min="0">
+                    <button onclick="generateGridSet()">Generate grid items</button>
+                    <label>Generated data</label>
+                    <textarea id="grid_output"></textarea>
+                </div>
+            </div>
+
+            <div style="margin-top:16px;">
+                <button onclick="applyGeneratorDefaults()">Apply generator settings as defaults</button>
+                <span class="small-note">Games will use these settings and generated data.</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- STATISTICS SCREEN -->
+    <div id="stats" class="screen">
+        <div class="card">
+            <h2>Statistics</h2>
+            <p class="small-note">
+                Shows scores at the moment the allowed number of errors was reached (and later scores in same game),
+                plus top score on that error threshold.
+            </p>
+            <div id="statsContent" class="stats-block"></div>
+            <button onclick="clearStats()">Clear statistics</button>
+        </div>
+    </div>
+
+    <!-- COLOR SET GAME SCREEN -->
+    <div id="colorGame" class="screen">
+        <div class="card set-game-container">
+            <h2>Color set</h2>
+            <div class="set-game-top">
+                <span class="set-game-label">Info:</span>
+                <span id="colorInfoText"></span>
+            </div>
+            <div class="set-game-top">
+                <span class="set-game-label">Colors shown:</span>
+                <span id="colorCount">0</span>
+                &nbsp;&nbsp;
+                <span class="set-game-label">Errors:</span>
+                <span id="colorErrorCount">0</span>
+            </div>
+            <div id="colorCurrentSequence"></div>
+            <div style="margin-top:10px;">
+                <button onclick="colorShowWord('new')">New</button>
+                <button onclick="colorShowWord('old')">Old</button>
+                <button onclick="endCurrentGame('color')">End game</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SYMBOL SET GAME SCREEN -->
+    <div id="symbolGame" class="screen">
+        <div class="card set-game-container">
+            <h2>Symbol set</h2>
+            <div class="set-game-top">
+                <span class="set-game-label">Info:</span>
+                <span id="symbolInfoText"></span>
+            </div>
+            <div class="set-game-top">
+                <span class="set-game-label">Words shown:</span>
+                <span id="symbolCount">0</span>
+                &nbsp;&nbsp;
+                <span class="set-game-label">Errors:</span>
+                <span id="symbolErrorCount">0</span>
+            </div>
+            <p id="symbolCurrentSequence"></p>
+            <div style="margin-top:10px;">
+                <button onclick="symbolShowWord('new')">New</button>
+                <button onclick="symbolShowWord('old')">Old</button>
+                <button onclick="endCurrentGame('symbol')">End game</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NUMERICAL SET GAME SCREEN -->
+    <div id="numericalGame" class="screen">
+        <div class="card set-game-container">
+            <h2>Numerical set</h2>
+            <div class="set-game-top">
+                <span class="set-game-label">Info:</span>
+                <span id="numericalInfoText"></span>
+            </div>
+            <div class="set-game-top">
+                <span class="set-game-label">Words shown:</span>
+                <span id="numericalCount">0</span>
+                &nbsp;&nbsp;
+                <span class="set-game-label">Errors:</span>
+                <span id="numericalErrorCount">0</span>
+            </div>
+            <p id="numericalCurrentSequence"></p>
+            <div style="margin-top:10px;">
+                <button onclick="numericalShowWord('new')">New</button>
+                <button onclick="numericalShowWord('old')">Old</button>
+                <button onclick="endCurrentGame('numerical')">End game</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- GRID SET GAME SCREEN -->
+    <div id="gridGame" class="screen">
+        <div class="card set-game-container">
+            <h2>Grid set</h2>
+            <div class="set-game-top">
+                <span class="set-game-label">Info:</span>
+                <span id="gridInfoText"></span>
+            </div>
+            <div class="set-game-top">
+                <span class="set-game-label">Colors shown:</span>
+                <span id="gridCount">0</span>
+                &nbsp;&nbsp;
+                <span class="set-game-label">Errors:</span>
+                <span id="gridErrorCount">0</span>
+            </div>
+            <div id="gridCurrentSequence"></div>
+            <div style="margin-top:10px;">
+                <button onclick="gridShowWord('new')">New</button>
+                <button onclick="gridShowWord('old')">Old</button>
+                <button onclick="endCurrentGame('grid')">End game</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- VISUAL UNTIMED SCREEN -->
+    <div id="visualUntimed" class="screen">
+        <div class="card">
+            <h2>Visual untimed</h2>
+
+            <div class="flex-between">
+                <div>
+                    <label for="vuTileSize">Tile size (px):</label>
+                    <input type="number" id="vuTileSize" value="50" min="10">
+                    <button onclick="vuUpdateTileSize()">Set tile size</button>
+                </div>
+                <div>
+                    <button onclick="vuGoNextLevel()">Next level</button>
+                    <button onclick="vuRestartLevel()">Restart level</button>
+                    <button onclick="endCurrentGame('visualUntimed')">End game</button>
+                    <button onclick="showScreen('main')">Back to main</button>
+                </div>
+            </div>
+
+            <div class="info" style="margin-top:10px;">
+                info: <span id="vuInfoLabel">1</span>
+                &nbsp;&nbsp; errors: <span id="vuErrorLabel">0</span>
+            </div>
+
+            <div style="margin-top:10px;">
+                <button onclick="vuCheckSequence()">Check</button>
+                <button onclick="vuNextItems()">Show next items</button>
+            </div>
+
+            <div class="vu-grid" id="vuGrid"></div>
+            <div class="game-over" id="vuGameOver" style="display:none;"></div>
+        </div>
+    </div>
+
+    <!-- DOUBLE MEMORY SCREEN -->
+    <div id="doubleMemory" class="screen">
+        <div class="card">
+            <h2>Double memory</h2>
+
+            <div class="flex-between">
+                <div>
+                    <label for="dmStartingSpan">Starting span length:</label>
+                    <input type="number" id="dmStartingSpan" min="2" value="2">
+                </div>
+                <div>
+                    <label class="inline">
+                        <input type="checkbox" id="dmReverseMode">
+                        Reverse mode (enter sequences in reverse order)
+                    </label>
+                </div>
+            </div>
+
+            <div style="margin-top:10px;">
+                <button id="dmBeginButton">Begin</button>
+                <button id="dmNextTrialButton" class="hidden">Next trial</button>
+                <button onclick="showScreen('main')">Back to main</button>
+            </div>
+
+            <p id="dmSpanDisplay">Span length: 2</p>
+            <p id="dmPhaseDisplay">Phase: Showing sequence</p>
+
+            <div class="dm-display-container" id="dmDisplayContainer">
+                <span class="dm-symbol-text" id="dmSymbolDisplay"></span>
+            </div>
+
+            <button id="dmNextItemButton" class="hidden">Next</button>
+
+            <div class="dm-buttons-container hidden" id="dmColorButtons"></div>
+            <div class="dm-buttons-container hidden" id="dmSymbolButtons"></div>
+        </div>
+    </div>
+
+    <script>
+        /***********************
+         * GLOBAL APP STATE
+         ***********************/
+        let darkMode = false;
+
+        function showScreen(id) {
+            const screens = document.querySelectorAll('.screen');
+            screens.forEach(s => s.classList.remove('active'));
+            const el = document.getElementById(id);
+            if (el) el.classList.add('active');
+            if (id === 'stats') {
+                renderStats();
+            }
+            if (id === 'visualUntimed') {
+                // start a fresh visual game each time screen is opened
+                vuGridSize = 3;
+                vuTilesToActivate = 4;
+                vuInitGame();
+                startNewStatGame('visualUntimed');
+            }
+        }
+
+        function toggleDarkMode() {
+            darkMode = !darkMode;
+            document.body.classList.toggle('dark', darkMode);
+        }
+
+        /***********************
+         * STATISTICS
+         ***********************/
+        // stats[gameKey] = array of games; each game is array of {score, errors}
+        const stats = {
+            color: [],
+            symbol: [],
+            numerical: [],
+            grid: [],
+            visualUntimed: [],
+            doubleMemory: []
+        };
+
+        function recordStat(gameKey, score, errors) {
+            if (!stats[gameKey]) stats[gameKey] = [];
+            if (stats[gameKey].length === 0) {
+                stats[gameKey].push([]);
+            }
+            stats[gameKey][stats[gameKey].length - 1].push({ score, errors });
+        }
+
+        function startNewStatGame(gameKey) {
+            if (!stats[gameKey]) stats[gameKey] = [];
+            stats[gameKey].push([]);
+        }
+
+        function renderStats() {
+            const notifyErrors = appSettings.notifyErrors;
+            let text = '';
+            function renderGameBlock(key, label) {
+                const games = stats[key] || [];
+                if (games.length === 0) return label + ':\n(no games)\n\n';
+                let block = label + ':\n';
+                let topOnThreshold = 0;
+                games.forEach((g, idx) => {
+                    if (g.length === 0) return;
+                    block += 'game ' + (idx + 1) + ' ';
+                    const parts = [];
+                    g.forEach(entry => {
+                        parts.push('(score ' + entry.score + ' errors ' + entry.errors + ')');
+                        if (entry.errors <= notifyErrors && entry.score > topOnThreshold) {
+                            topOnThreshold = entry.score;
+                        }
+                    });
+                    block += parts.join(' ') + '\n';
+                });
+                block += 'top score on ' + notifyErrors + ' or fewer errors: ' + topOnThreshold + '\n\n';
+                return block;
+            }
+            text += renderGameBlock('symbol', 'symbol set');
+            text += renderGameBlock('numerical', 'numerical set');
+            text += renderGameBlock('color', 'color set');
+            text += renderGameBlock('grid', 'grid set');
+            text += renderGameBlock('visualUntimed', 'visual untimed');
+            text += renderGameBlock('doubleMemory', 'double memory');
+            document.getElementById('statsContent').textContent = text;
+        }
+
+        function clearStats() {
+            for (const k in stats) {
+                stats[k] = [];
+            }
+            renderStats();
+        }
+
+        /***********************
+         * GENERATOR SETTINGS
+         ***********************/
+        const appSettings = {
+            numItems: 512,
+            sequenceLength: 9999,
+            notifyErrors: 3,
+            visualWrongSquaresAtError: 3,
+            colorData: [],
+            symbolData: [],
+            numericalData: [],
+            gridData: []
+        };
+
+        function shuffleArray(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+        }
+
+        function generateUniqueItems(generatorFn, count, maxAttemptsPerItem = 1000) {
+            const items = new Set();
+            let attempts = 0;
+            while (items.size < count && attempts < count * maxAttemptsPerItem) {
+                const item = generatorFn();
+                if (!items.has(item)) {
+                    items.add(item);
+                }
+                attempts++;
+            }
+            return Array.from(items);
+        }
+
+        /* COLOR SET */
+        function generateColorSet() {
+            const numItems = parseInt(document.getElementById('gen_num_items').value, 10);
+            const separator = document.getElementById('color_separator').value || ',';
+            const units = parseInt(document.getElementById('color_units').value, 10);
+            const possible = document.getElementById('color_possible').value
+                .split(',')
+                .map(s => s.trim())
+                .filter(s => s.length > 0);
+
+            function oneColorItem() {
+                const chosen = [];
+                for (let i = 0; i < units; i++) {
+                    const idx = Math.floor(Math.random() * possible.length);
+                    chosen.push(possible[idx]);
+                }
+                return chosen.join(' ');
+            }
+
+            const items = generateUniqueItems(oneColorItem, numItems);
+            document.getElementById('color_output').value = items.join(' ' + separator + ' ');
+            appSettings.colorData = items;
+        }
+
+        /* SYMBOL SET */
+        function generateSymbolSet() {
+            const numItems = parseInt(document.getElementById('gen_num_items').value, 10);
+            const separator = document.getElementById('symbol_separator').value || ',';
+            const units = parseInt(document.getElementById('symbol_units').value, 10);
+            const possible = document.getElementById('symbol_possible').value
+                .split(',')
+                .map(s => s.trim())
+                .filter(s => s.length > 0);
+
+            function oneSymbolItem() {
+                const chosen = [];
+                for (let i = 0; i < units; i++) {
+                    const idx = Math.floor(Math.random() * possible.length);
+                    chosen.push(possible[idx]);
+                }
+                return chosen.join('  ');
+            }
+
+            const items = generateUniqueItems(oneSymbolItem, numItems);
+            document.getElementById('symbol_output').value = items.join(' ' + separator + ' ');
+            appSettings.symbolData = items;
+        }
+
+        /* NUMERICAL SET */
+        function generateNumericalSet() {
+            const numItems = parseInt(document.getElementById('gen_num_items').value, 10);
+            const separator = document.getElementById('num_separator').value || ',';
+            const digits = parseInt(document.getElementById('num_units').value, 10);
+
+            function oneNumberItem() {
+                let s = '';
+                for (let i = 0; i < digits; i++) {
+                    s += Math.floor(Math.random() * 10).toString();
+                }
+                return s;
+            }
+
+            const items = generateUniqueItems(oneNumberItem, numItems);
+            document.getElementById('num_output').value = items.join(separator);
+            appSettings.numericalData = items;
+        }
+
+        /* GRID SET */
+        function generateGridSet() {
+            const numItems = parseInt(document.getElementById('gen_num_items').value, 10);
+            const separator = document.getElementById('grid_separator').value || ',';
+            const side = parseInt(document.getElementById('grid_side').value, 10);
+            const onesMin = parseInt(document.getElementById('grid_ones_min').value, 10);
+            const onesMax = parseInt(document.getElementById('grid_ones_max').value, 10);
+
+            const unitsPerItem = side;
+
+            function countOnes(str) {
+                return str.split('').filter(c => c === '1').length;
+            }
+
+            function randomBinaryOfLength(len) {
+                let s = '';
+                for (let i = 0; i < len; i++) {
+                    s += Math.random() < 0.5 ? '0' : '1';
+                }
+                return s;
+            }
+
+            function oneGridItem() {
+                let attempts = 0;
+                while (attempts < 1000) {
+                    const units = [];
+                    let totalOnes = 0;
+                    for (let i = 0; i < unitsPerItem; i++) {
+                        const bin = randomBinaryOfLength(side);
+                        units.push(bin);
+                        totalOnes += countOnes(bin);
+                    }
+                    if (totalOnes >= onesMin && totalOnes <= onesMax) {
+                        return units.join(' ');
+                    }
+                    attempts++;
+                }
+                const units = [];
+                for (let i = 0; i < unitsPerItem; i++) {
+                    units.push(randomBinaryOfLength(side));
+                }
+                return units.join(' ');
+            }
+
+            const items = generateUniqueItems(oneGridItem, numItems);
+            document.getElementById('grid_output').value = items.join(' ' + separator + ' ');
+            appSettings.gridData = items;
+        }
+
+        function applyGeneratorDefaults() {
+            appSettings.numItems = parseInt(document.getElementById('gen_num_items').value, 10) || 512;
+            appSettings.sequenceLength = parseInt(document.getElementById('gen_sequence_length').value, 10) || 9999;
+            appSettings.notifyErrors = parseInt(document.getElementById('gen_notify_errors').value, 10) || 3;
+            appSettings.visualWrongSquaresAtError = parseInt(document.getElementById('gen_visual_wrong_squares').value, 10) || 3;
+            alert('Generator settings applied. Games will use these settings and generated data.');
+        }
+
+        /***********************
+         * SET MEMORY GAMES COMMON
+         ***********************/
+        function ensureDataGeneratedFor(gameKey) {
+            if (gameKey === 'color' && appSettings.colorData.length === 0) {
+                generateColorSet();
+            }
+            if (gameKey === 'symbol' && appSettings.symbolData.length === 0) {
+                generateSymbolSet();
+            }
+            if (gameKey === 'numerical' && appSettings.numericalData.length === 0) {
+                generateNumericalSet();
+            }
+            if (gameKey === 'grid' && appSettings.gridData.length === 0) {
+                generateGridSet();
+            }
+        }
+
+        function startSetGame(gameKey) {
+            ensureDataGeneratedFor(gameKey);
+            if (gameKey === 'color') initColorGame();
+            if (gameKey === 'symbol') initSymbolGame();
+            if (gameKey === 'numerical') initNumericalGame();
+            if (gameKey === 'grid') initGridGame();
+            startNewStatGame(gameKey);
+        }
+
+        function endCurrentGame(gameKey) {
+            // For visualUntimed, record final score/errors and reset to very first level
+            if (gameKey === 'visualUntimed') {
+                recordStat('visualUntimed', vuScoreCount, vuErrorCount);
+                vuGridSize = 3;
+                vuTilesToActivate = 4;
+                vuInitGame();
+                return;
+            }
+            showScreen('main');
+        }
+
+        function checkErrorThreshold(gameKey, score, errors) {
+            const threshold = appSettings.notifyErrors;
+            if (errors === threshold) {
+                recordStat(gameKey, score, errors);
+                alert('You reached max number of errors (' + threshold + '). Score at this moment: ' + score + '. You can continue playing.');
+            } else {
+                recordStat(gameKey, score, errors);
+            }
+        }
+
+        /***********************
+         * COLOR SET GAME
+         ***********************/
+        let colorClickCount = 0;
+        let colorDisplayedCount = 0;
+        let colorErrorCount = 0;
+        let colorShownWords = new Set();
+        let colorSequence = [];
+        let colorPrevNew = 0;
+        let colorPrevOld = 0;
+        let colorPrevTypes = [];
+        let colorPrevNewMin = 4;
+        let colorPrevOldMin = 2;
+        let colorRandomizerForNewOld = 4 * 16;
+        let colorWordOnScreenNow = '';
+
+        function initColorGame() {
+            colorClickCount = 0;
+            colorDisplayedCount = 0;
+            colorErrorCount = 0;
+            colorShownWords = new Set();
+            colorSequence = [];
+            colorPrevNew = 0;
+            colorPrevOld = 0;
+            colorPrevTypes = [];
+            colorWordOnScreenNow = '';
+            document.getElementById('colorCount').textContent = '0';
+            document.getElementById('colorErrorCount').textContent = '0';
+            document.getElementById('colorInfoText').textContent = '';
+            document.getElementById('colorCurrentSequence').innerHTML = '';
+            showScreen('colorGame');
+            colorShowWord('new');
+        }
+
+        function colorUpdateCounters() {
+            if (colorSequence.length > 8) {
+                colorPrevTypes = colorSequence.slice(-8).map(w => w ? 'old' : 'new');
+                colorPrevNew = colorPrevTypes.filter(t => t === 'new').length;
+                colorPrevOld = colorPrevTypes.filter(t => t === 'old').length;
+            }
+        }
+
+        function colorGetRandomWord01() {
+            const list = appSettings.colorData;
+            const randomIndex = Math.floor(Math.random() * list.length);
+            return list[randomIndex];
+        }
+
+        function colorGetNewWord() {
+            const list = appSettings.colorData;
+            let newWord;
+            for (let i = 0; i < list.length; i++) {
+                newWord = list[Math.floor(Math.random() * list.length)];
+                if (!colorShownWords.has(newWord)) {
+                    return newWord;
+                }
+            }
+            return colorGetRandomWord01();
+        }
+
+        function colorGetOldWord() {
+            const oldWords = Array.from(colorShownWords);
+            if (oldWords.length > 0) {
+                return oldWords[Math.floor(Math.random() * oldWords.length)];
+            }
+            return colorGetRandomWord01();
+        }
+
+        function colorGetRandomWord02() {
+            let theWord = '';
+            const randomIndex = Math.floor(Math.random() * colorRandomizerForNewOld);
+            if (randomIndex < 16) {
+                theWord = colorGetOldWord();
+            } else {
+                theWord = colorGetNewWord();
+            }
+            return theWord;
+        }
+
+        function colorUpdateSequenceDisplay(word) {
+            colorWordOnScreenNow = word;
+            const container = document.getElementById('colorCurrentSequence');
+            container.innerHTML = '';
+            if (!word) return;
+            const colors = word.split(' ');
+            colors.forEach(c => {
+                const div = document.createElement('div');
+                div.className = 'color-square';
+                div.style.backgroundColor = c;
+                container.appendChild(div);
+            });
+        }
+
+        function colorShowWord(buttonType) {
+            if (colorClickCount >= appSettings.sequenceLength) {
+                colorUpdateSequenceDisplay('');
+                return;
+            }
+            const currentWord = colorWordOnScreenNow;
+            const wasCurrentWordShown = colorShownWords.has(currentWord) && currentWord !== '';
+            if ((buttonType === 'new' && wasCurrentWordShown) || (buttonType === 'old' && !wasCurrentWordShown)) {
+                colorErrorCount++;
+                document.getElementById('colorErrorCount').textContent = colorErrorCount;
+                checkErrorThreshold('color', colorDisplayedCount, colorErrorCount);
+            }
+
+            let word;
+            if (colorClickCount >= 8) {
+                if (colorPrevNew < colorPrevNewMin) {
+                    word = colorGetNewWord();
+                } else if (colorPrevOld < colorPrevOldMin) {
+                    word = colorGetOldWord();
+                } else {
+                    word = colorGetRandomWord02();
+                }
+            } else {
+                word = colorGetRandomWord01();
+            }
+
+            if (!word) {
+                word = colorGetRandomWord01();
+            }
+
+            colorSequence.push(wasCurrentWordShown);
+            colorUpdateCounters();
+            colorUpdateSequenceDisplay(word);
+            if (currentWord && !colorShownWords.has(currentWord)) {
+                colorShownWords.add(currentWord);
+            }
+            colorClickCount++;
+            colorDisplayedCount++;
+            document.getElementById('colorCount').textContent = colorDisplayedCount;
+        }
+
+        /***********************
+         * SYMBOL SET GAME
+         ***********************/
+        let symbolClickCount = 0;
+        let symbolDisplayedCount = 0;
+        let symbolErrorCount = 0;
+        let symbolShownWords = new Set();
+        let symbolSequence = [];
+        let symbolPrevNew = 0;
+        let symbolPrevOld = 0;
+        let symbolPrevTypes = [];
+        let symbolPrevNewMin = 4;
+        let symbolPrevOldMin = 2;
+        let symbolRandomizerForNewOld = 4 * 16;
+        let symbolWordOnScreenNow = '';
+
+        function initSymbolGame() {
+            symbolClickCount = 0;
+            symbolDisplayedCount = 0;
+            symbolErrorCount = 0;
+            symbolShownWords = new Set();
+            symbolSequence = [];
+            symbolPrevNew = 0;
+            symbolPrevOld = 0;
+            symbolPrevTypes = [];
+            symbolWordOnScreenNow = '';
+            document.getElementById('symbolCount').textContent = '0';
+            document.getElementById('symbolErrorCount').textContent = '0';
+            document.getElementById('symbolInfoText').textContent = '';
+            document.getElementById('symbolCurrentSequence').innerHTML = '';
+            showScreen('symbolGame');
+            symbolShowWord('new');
+        }
+
+        function symbolUpdateCounters() {
+            if (symbolSequence.length > 8) {
+                symbolPrevTypes = symbolSequence.slice(-8).map(w => w ? 'old' : 'new');
+                symbolPrevNew = symbolPrevTypes.filter(t => t === 'new').length;
+                symbolPrevOld = symbolPrevTypes.filter(t => t === 'old').length;
+            }
+        }
+
+        function symbolGetRandomWord01() {
+            const list = appSettings.symbolData;
+            const randomIndex = Math.floor(Math.random() * list.length);
+            return list[randomIndex];
+        }
+
+        function symbolGetNewWord() {
+            const list = appSettings.symbolData;
+            let newWord;
+            for (let i = 0; i < list.length; i++) {
+                newWord = list[Math.floor(Math.random() * list.length)];
+                if (!symbolShownWords.has(newWord)) {
+                    return newWord;
+                }
+            }
+            return symbolGetRandomWord01();
+        }
+
+        function symbolGetOldWord() {
+            const oldWords = Array.from(symbolShownWords);
+            if (oldWords.length > 0) {
+                return oldWords[Math.floor(Math.random() * oldWords.length)];
+            }
+            return symbolGetRandomWord01();
+        }
+
+        function symbolGetRandomWord02() {
+            let theWord = '';
+            const randomIndex = Math.floor(Math.random() * symbolRandomizerForNewOld);
+            if (randomIndex < 16) {
+                theWord = symbolGetOldWord();
+            } else {
+                theWord = symbolGetNewWord();
+            }
+            return theWord;
+        }
+
+        function symbolUpdateSequenceDisplay(word) {
+            symbolWordOnScreenNow = word;
+            const el = document.getElementById('symbolCurrentSequence');
+            el.innerHTML = word ? word.replace(/\n/g, '<br>') : '';
+        }
+
+        function symbolShowWord(buttonType) {
+            if (symbolClickCount >= appSettings.sequenceLength) {
+                symbolUpdateSequenceDisplay('');
+                return;
+            }
+            const currentWord = symbolWordOnScreenNow.trim();
+            const wasCurrentWordShown = symbolShownWords.has(currentWord) && currentWord !== '';
+            if ((buttonType === 'new' && wasCurrentWordShown) || (buttonType === 'old' && !wasCurrentWordShown)) {
+                symbolErrorCount++;
+                document.getElementById('symbolErrorCount').textContent = symbolErrorCount;
+                checkErrorThreshold('symbol', symbolDisplayedCount, symbolErrorCount);
+            }
+
+            let word;
+            if (symbolClickCount >= 8) {
+                if (symbolPrevNew < symbolPrevNewMin) {
+                    word = symbolGetNewWord();
+                } else if (symbolPrevOld < symbolPrevOldMin) {
+                    word = symbolGetOldWord();
+                } else {
+                    word = symbolGetRandomWord02();
+                }
+            } else {
+                word = symbolGetRandomWord01();
+            }
+
+            if (!word) {
+                word = symbolGetRandomWord01();
+            }
+
+            symbolSequence.push(wasCurrentWordShown);
+            symbolUpdateCounters();
+            symbolUpdateSequenceDisplay(word);
+            if (currentWord && !symbolShownWords.has(currentWord)) {
+                symbolShownWords.add(currentWord);
+            }
+            symbolClickCount++;
+            symbolDisplayedCount++;
+            document.getElementById('symbolCount').textContent = symbolDisplayedCount;
+        }
+
+        /***********************
+         * NUMERICAL SET GAME
+         ***********************/
+        let numericalClickCount = 0;
+        let numericalDisplayedCount = 0;
+        let numericalErrorCount = 0;
+        let numericalShownWords = new Set();
+        let numericalSequence = [];
+        let numericalPrevNew = 0;
+        let numericalPrevOld = 0;
+        let numericalPrevTypes = [];
+        let numericalPrevNewMin = 4;
+        let numericalPrevOldMin = 2;
+        let numericalRandomizerForNewOld = 4 * 16;
+        let numericalWordOnScreenNow = '';
+
+        function initNumericalGame() {
+            numericalClickCount = 0;
+            numericalDisplayedCount = 0;
+            numericalErrorCount = 0;
+            numericalShownWords = new Set();
+            numericalSequence = [];
+            numericalPrevNew = 0;
+            numericalPrevOld = 0;
+            numericalPrevTypes = [];
+            numericalWordOnScreenNow = '';
+            document.getElementById('numericalCount').textContent = '0';
+            document.getElementById('numericalErrorCount').textContent = '0';
+            document.getElementById('numericalInfoText').textContent = '';
+            document.getElementById('numericalCurrentSequence').innerHTML = '';
+            showScreen('numericalGame');
+            numericalShowWord('new');
+        }
+
+        function numericalUpdateCounters() {
+            if (numericalSequence.length > 8) {
+                numericalPrevTypes = numericalSequence.slice(-8).map(w => w ? 'old' : 'new');
+                numericalPrevNew = numericalPrevTypes.filter(t => t === 'new').length;
+                numericalPrevOld = numericalPrevTypes.filter(t => t === 'old').length;
+            }
+        }
+
+        function numericalGetRandomWord01() {
+            const list = appSettings.numericalData;
+            const randomIndex = Math.floor(Math.random() * list.length);
+            return list[randomIndex];
+        }
+
+        function numericalGetNewWord() {
+            const list = appSettings.numericalData;
+            let newWord;
+            for (let i = 0; i < list.length; i++) {
+                newWord = list[Math.floor(Math.random() * list.length)];
+                if (!numericalShownWords.has(newWord)) {
+                    return newWord;
+                }
+            }
+            return numericalGetRandomWord01();
+        }
+
+        function numericalGetOldWord() {
+            const oldWords = Array.from(numericalShownWords);
+            if (oldWords.length > 0) {
+                return oldWords[Math.floor(Math.random() * oldWords.length)];
+            }
+            return numericalGetRandomWord01();
+        }
+
+        function numericalGetRandomWord02() {
+            let theWord = '';
+            const randomIndex = Math.floor(Math.random() * numericalRandomizerForNewOld);
+            if (randomIndex < 16) {
+                theWord = numericalGetOldWord();
+            } else {
+                theWord = numericalGetNewWord();
+            }
+            return theWord;
+        }
+
+        function numericalUpdateSequenceDisplay(word) {
+            numericalWordOnScreenNow = word;
+            const el = document.getElementById('numericalCurrentSequence');
+            el.innerHTML = word ? word.replace(/\n/g, '<br>') : '';
+        }
+
+        function numericalShowWord(buttonType) {
+            if (numericalClickCount >= appSettings.sequenceLength) {
+                numericalUpdateSequenceDisplay('');
+                return;
+            }
+            const currentWord = numericalWordOnScreenNow.trim();
+            const wasCurrentWordShown = numericalShownWords.has(currentWord) && currentWord !== '';
+            if ((buttonType === 'new' && wasCurrentWordShown) || (buttonType === 'old' && !wasCurrentWordShown)) {
+                numericalErrorCount++;
+                document.getElementById('numericalErrorCount').textContent = numericalErrorCount;
+                checkErrorThreshold('numerical', numericalDisplayedCount, numericalErrorCount);
+            }
+
+            let word;
+            if (numericalClickCount >= 8) {
+                if (numericalPrevNew < numericalPrevNewMin) {
+                    word = numericalGetNewWord();
+                } else if (numericalPrevOld < numericalPrevOldMin) {
+                    word = numericalGetOldWord();
+                } else {
+                    word = numericalGetRandomWord02();
+                }
+            } else {
+                word = numericalGetRandomWord01();
+            }
+
+            if (!word) {
+                word = numericalGetRandomWord01();
+            }
+
+            numericalSequence.push(wasCurrentWordShown);
+            numericalUpdateCounters();
+            numericalUpdateSequenceDisplay(word);
+            if (currentWord && !numericalShownWords.has(currentWord)) {
+                numericalShownWords.add(currentWord);
+            }
+            numericalClickCount++;
+            numericalDisplayedCount++;
+            document.getElementById('numericalCount').textContent = numericalDisplayedCount;
+        }
+
+        /***********************
+         * GRID SET GAME
+         ***********************/
+        let gridClickCount = 0;
+        let gridDisplayedCount = 0;
+        let gridErrorCount = 0;
+        let gridShownWords = new Set();
+        let gridSequence = [];
+        let gridPrevNew = 0;
+        let gridPrevOld = 0;
+        let gridPrevTypes = [];
+        let gridPrevNewMin = 4;
+        let gridPrevOldMin = 2;
+        let gridRandomizerForNewOld = 4 * 16;
+        let gridWordOnScreenNow = '';
+
+        function initGridGame() {
+            gridClickCount = 0;
+            gridDisplayedCount = 0;
+            gridErrorCount = 0;
+            gridShownWords = new Set();
+            gridSequence = [];
+            gridPrevNew = 0;
+            gridPrevOld = 0;
+            gridPrevTypes = [];
+            gridWordOnScreenNow = '';
+            document.getElementById('gridCount').textContent = '0';
+            document.getElementById('gridErrorCount').textContent = '0';
+            document.getElementById('gridInfoText').textContent = '';
+            document.getElementById('gridCurrentSequence').innerHTML = '';
+            showScreen('gridGame');
+            gridShowWord('new');
+        }
+
+        function gridUpdateCounters() {
+            if (gridSequence.length > 8) {
+                gridPrevTypes = gridSequence.slice(-8).map(w => w ? 'old' : 'new');
+                gridPrevNew = gridPrevTypes.filter(t => t === 'new').length;
+                gridPrevOld = gridPrevTypes.filter(t => t === 'old').length;
+            }
+        }
+
+        function gridGetRandomWord01() {
+            const list = appSettings.gridData;
+            const randomIndex = Math.floor(Math.random() * list.length);
+            return list[randomIndex];
+        }
+
+        function gridGetNewWord() {
+            const list = appSettings.gridData;
+            let newWord;
+            for (let i = 0; i < list.length; i++) {
+                newWord = list[Math.floor(Math.random() * list.length)];
+                if (!gridShownWords.has(newWord)) {
+                    return newWord;
+                }
+            }
+            return gridGetRandomWord01();
+        }
+
+        function gridGetOldWord() {
+            const oldWords = Array.from(gridShownWords);
+            if (oldWords.length > 0) {
+                return oldWords[Math.floor(Math.random() * oldWords.length)];
+            }
+            return gridGetRandomWord01();
+        }
+
+        function gridGetRandomWord02() {
+            let theWord = '';
+            const randomIndex = Math.floor(Math.random() * gridRandomizerForNewOld);
+            if (randomIndex < 16) {
+                theWord = gridGetOldWord();
+            } else {
+                theWord = gridGetNewWord();
+            }
+            return theWord;
+        }
+
+        function gridUpdateSequenceDisplay(binarySequence) {
+            gridWordOnScreenNow = binarySequence;
+            const sequenceDiv = document.getElementById('gridCurrentSequence');
+            sequenceDiv.innerHTML = '';
+            if (!binarySequence) return;
+            const binaryNumbers = binarySequence.split(' ');
+            const binaryLength = binaryNumbers[0].length;
+            for (let i = 0; i < binaryLength; i++) {
+                let row = document.createElement('div');
+                for (let j = 0; j < binaryNumbers.length; j++) {
+                    let square = document.createElement('div');
+                    square.className = 'grid-square ' + (binaryNumbers[j][i] === '1' ? 'white' : 'black');
+                    row.appendChild(square);
+                }
+                sequenceDiv.appendChild(row);
+            }
+        }
+
+        function gridShowWord(buttonType) {
+            if (gridClickCount >= appSettings.sequenceLength) {
+                gridUpdateSequenceDisplay('');
+                return;
+            }
+            const currentWord = gridWordOnScreenNow;
+            const wasCurrentWordShown = gridShownWords.has(currentWord) && currentWord !== '';
+            if ((buttonType === 'new' && wasCurrentWordShown) || (buttonType === 'old' && !wasCurrentWordShown)) {
+                gridErrorCount++;
+                document.getElementById('gridErrorCount').textContent = gridErrorCount;
+                checkErrorThreshold('grid', gridDisplayedCount, gridErrorCount);
+            }
+
+            let word;
+            if (gridClickCount >= 8) {
+                if (gridPrevNew < gridPrevNewMin) {
+                    word = gridGetNewWord();
+                } else if (gridPrevOld < gridPrevOldMin) {
+                    word = gridGetOldWord();
+                } else {
+                    word = gridGetRandomWord02();
+                }
+            } else {
+                word = gridGetRandomWord01();
+            }
+
+            if (!word) {
+                word = gridGetRandomWord01();
+            }
+
+            gridSequence.push(wasCurrentWordShown);
+            gridUpdateCounters();
+            gridUpdateSequenceDisplay(word);
+            if (currentWord && !gridShownWords.has(currentWord)) {
+                gridShownWords.add(currentWord);
+            }
+            gridClickCount++;
+            gridDisplayedCount++;
+            document.getElementById('gridCount').textContent = gridDisplayedCount;
+        }
+
+        /***********************
+         * VISUAL UNTIMED GAME
+         ***********************/
+        const vuGridContainer = document.getElementById('vuGrid');
+        const vuSpanLengthDisplay = document.getElementById('vuInfoLabel');
+        const vuGameOverDisplay = document.getElementById('vuGameOver');
+        const vuErrorLabel = document.getElementById('vuErrorLabel');
+
+        let vuSpanLength = 1;
+        let vuGridSize = 3;
+        let vuTilesToActivate = 4;
+        let vuSequences = [];
+        let vuCurrentSequenceIndex = 0;
+        let vuUserGridInput = [];
+        let vuTrialSpanLengths = [];
+        let vuTrialResults = [];
+        let vuConsecutiveFailures = 0;
+        let vuShowTime = 10;
+        let vuShowNextItemsCount = 0;
+        let vuShowNextItemsSequence = new Set();
+        let vuShowNextItemsBounds = [3, 0, 0];
+        let vuUseNineNext = true;
+        let vuDisplayNine = 0;
+        let vuDisplayResultBool = false;
+
+        // score and error counters for visual game
+        let vuScoreCount = 0; // number of tiles in last correctly made level
+        let vuErrorCount = 0;
+
+        function vuUpdateTileSize() {
+            const newSize = parseInt(document.getElementById('vuTileSize').value);
+            if (!isNaN(newSize) && newSize >= 10) {
+                const tiles = document.getElementsByClassName('vu-tile');
+                for (let i = 0; i < tiles.length; i++) {
+                    tiles[i].style.width = newSize + 'px';
+                    tiles[i].style.height = newSize + 'px';
+                }
+            }
+        }
+
+        function vuRestartLevel() {
+            vuGoNextLevel02();
+        }
+
+        function vuGoNextLevel() {
+            if (vuTilesToActivate < 48) {
+                vuTilesToActivate += Math.floor(vuTilesToActivate / 8) + 1;
+            } else {
+                vuTilesToActivate += Math.floor(vuTilesToActivate / 8) - 1;
+            }
+
+            if (vuGridSize < 10) {
+                vuUseNineNext = !vuUseNineNext;
+                if (vuUseNineNext) {
+                    vuDisplayNine = vuDisplayNine + 1;
+                    if (vuDisplayNine > 2) {
+                        vuDisplayNine = 1;
+                    }
+                }
+            } else {
+                vuUseNineNext = true;
+                vuDisplayNine = vuDisplayNine + 1;
+                if (vuDisplayNine > 2) {
+                    vuDisplayNine = 0;
+                }
+                if (vuDisplayNine === 0) {
+                    vuUseNineNext = false;
+                }
+            }
+            vuGoNextLevel02();
+        }
+
+        function vuGoNextLevel02() {
+            vuGoNextLevel03();
+            vuUpdateTileSize();
+        }
+
+        function vuGoNextLevel03() {
+            if (vuTilesToActivate > ((vuGridSize + 1) * (vuGridSize + 1) / 3)) {
+                vuGridSize += 1;
+            }
+
+            if (vuGridSize === 3) vuShowNextItemsBounds = [3, 0, 0];
+            if (vuGridSize === 4) vuShowNextItemsBounds = [2, 2, 0];
+            if (vuGridSize === 5) vuShowNextItemsBounds = [3, 2, 0];
+            if (vuGridSize === 6) vuShowNextItemsBounds = [3, 3, 0];
+            if (vuGridSize === 7) vuShowNextItemsBounds = [4, 3, 0];
+            if (vuGridSize === 8) vuShowNextItemsBounds = [4, 3, 1];
+            if (vuGridSize === 9) vuShowNextItemsBounds = [4, 3, 1];
+            if (vuGridSize === 10) vuShowNextItemsBounds = [5, 4, 1];
+            if (vuGridSize === 11) vuShowNextItemsBounds = [5, 5, 1];
+            if (vuGridSize === 12) vuShowNextItemsBounds = [6, 5, 1];
+            if (vuGridSize === 13) vuShowNextItemsBounds = [6, 6, 1];
+            if (vuGridSize === 14) vuShowNextItemsBounds = [6, 6, 1];
+            if (vuGridSize === 15) vuShowNextItemsBounds = [7, 6, 1];
+
+            let the_first = 0;
+            let the_second = 0;
+            let the_unite = 0;
+
+            if (vuGridSize > 15) {
+                if (vuUseNineNext) {
+                    the_unite = Math.floor(vuGridSize / 17) + 1;
+                    the_first = 0;
+                    the_second = Math.floor(vuGridSize * 0.34);
+                } else {
+                    const part_of_first = 0.45;
+                    the_unite = Math.floor(vuGridSize / 17) + 1;
+                    the_first = Math.floor(vuGridSize * part_of_first);
+                    the_second = Math.floor(vuGridSize * part_of_first);
+                    if ((vuGridSize * part_of_first) - Math.floor(vuGridSize * part_of_first) > 0.33) {
+                        the_first += 1;
+                    }
+                }
+                vuShowNextItemsBounds = [the_first, the_second, the_unite];
+            } else {
+                if (vuGridSize > 5) {
+                    if (vuUseNineNext) {
+                        the_unite = 1;
+                        the_first = 0;
+                        the_second = Math.floor(vuGridSize * 0.34);
+                        vuShowNextItemsBounds = [the_first, the_second, the_unite];
+                    }
+                }
+            }
+
+            the_first = vuShowNextItemsBounds[0];
+            the_second = vuShowNextItemsBounds[1];
+            the_unite = vuShowNextItemsBounds[2];
+
+            vuCreateGrid();
+            vuStartSpan();
+
+            vuShowNextItemsCount = 0;
+            vuShowNextItemsSequence = new Set();
+
+            document.getElementById('vuInfoLabel').textContent = 'tiles ' + vuTilesToActivate.toString();
+        }
+
+        function vuCreateGrid() {
+            vuGridContainer.innerHTML = '';
+            vuGridContainer.style.gridTemplateColumns = `repeat(${vuGridSize}, 1fr)`;
+            vuGridContainer.style.gridTemplateRows = `repeat(${vuGridSize}, 1fr)`;
+
+            for (let i = 0; i < vuGridSize * vuGridSize; i++) {
+                const tile = document.createElement('div');
+                tile.classList.add('vu-tile');
+                tile.dataset.index = i;
+                tile.addEventListener('click', () => vuHandleTileClick(i));
+                vuGridContainer.appendChild(tile);
+            }
+        }
+
+        function vuGenerateSequence() {
+            const sequence = new Set();
+            while (sequence.size < vuTilesToActivate) {
+                sequence.add(Math.floor(Math.random() * vuGridSize * vuGridSize));
+            }
+            return Array.from(sequence);
+        }
+
+        function vuGenerateSequences(span) {
+            vuSequences = [];
+            for (let i = 0; i < span; i++) {
+                vuSequences.push(vuGenerateSequence());
+            }
+        }
+
+        function vuNextItems() {
+            vuShowNextItemsSequence.forEach(index => {
+                const tile = vuGridContainer.children[index];
+                tile.classList.remove('active');
+            });
+            vuShowNextItemsSequence = new Set();
+
+            if (vuShowNextItemsCount < 21) {
+                const correctGrid = vuSequences[vuCurrentSequenceIndex];
+                correctGrid.forEach(index => {
+                    vuDisplayResultBool = false;
+                    const the_index = index + 1;
+
+                    if (vuShowNextItemsBounds[0] > 0) {
+                        if (vuShowNextItemsCount === 0) {
+                            const bool1 = (index / vuGridSize) < vuShowNextItemsBounds[0];
+                            const bool2 = (index % vuGridSize) < vuShowNextItemsBounds[0];
+                            vuDisplayResultBool = bool1 && bool2;
+                        }
+                        if (vuShowNextItemsCount === 1) {
+                            const bool1 = (index / vuGridSize) < vuShowNextItemsBounds[0];
+                            const bool2 = (index % vuGridSize) > (vuGridSize - vuShowNextItemsBounds[1] - 1);
+                            vuDisplayResultBool = bool1 && bool2;
+                        }
+                        if (vuShowNextItemsCount === 2) {
+                            const bool1 = (the_index / vuGridSize) > vuGridSize - vuShowNextItemsBounds[1];
+                            const bool2 = (index % vuGridSize) < vuShowNextItemsBounds[0];
+                            vuDisplayResultBool = bool1 && bool2;
+                        }
+                        if (vuShowNextItemsCount === 3) {
+                            const bool1 = (the_index / vuGridSize) > vuGridSize - vuShowNextItemsBounds[1];
+                            const bool2 = (index % vuGridSize) > (vuGridSize - vuShowNextItemsBounds[1] - 1);
+                            vuDisplayResultBool = bool1 && bool2;
+                        }
+                        if (vuShowNextItemsCount === 4) {
+                            const bool11 = (the_index / vuGridSize) > (vuShowNextItemsBounds[0] - vuShowNextItemsBounds[2]);
+                            const bool12 = (index / vuGridSize) < (vuGridSize - vuShowNextItemsBounds[1] + vuShowNextItemsBounds[2]);
+                            const bool21 = (index % vuGridSize) > (vuShowNextItemsBounds[0] - vuShowNextItemsBounds[2] - 1);
+                            const bool22 = (index % vuGridSize) < (vuGridSize - vuShowNextItemsBounds[1]) + vuShowNextItemsBounds[2];
+                            const bool1 = bool11 && bool12;
+                            const bool2 = bool21 && bool22;
+                            vuDisplayResultBool = bool1 || bool2;
+                        }
+                    }
+
+                    if (vuShowNextItemsBounds[0] === 0) {
+                        vuDisplayResultBool = false;
+                        let the_unite_02 = vuShowNextItemsBounds[2];
+                        if (vuGridSize < 9) the_unite_02 = 0;
+
+                        const bool11 = (the_index / vuGridSize) > (vuShowNextItemsBounds[1] - the_unite_02);
+                        const bool12 = (index / vuGridSize) < (vuGridSize - vuShowNextItemsBounds[1] + the_unite_02);
+                        const bool21 = (index % vuGridSize) > (vuShowNextItemsBounds[1] - the_unite_02 - 1);
+                        const bool22 = (index % vuGridSize) < (vuGridSize - vuShowNextItemsBounds[1]) + the_unite_02;
+                        const bool_middle_1 = bool11 && bool12;
+                        const bool_middle_2 = bool21 && bool22;
+
+                        let isIn11, isIn12, isIn13, isIn21, isIn22, isIn23, isIn31, isIn32, isIn33;
+
+                        let bool1 = (index / vuGridSize) < (vuShowNextItemsBounds[1] + vuShowNextItemsBounds[2]);
+                        let bool2 = (index % vuGridSize) < (vuShowNextItemsBounds[1] + vuShowNextItemsBounds[2]);
+                        isIn11 = bool1 && bool2;
+
+                        bool1 = (index / vuGridSize) < (vuShowNextItemsBounds[1] + vuShowNextItemsBounds[2]);
+                        bool2 = bool_middle_2;
+                        isIn21 = bool1 && bool2;
+
+                        bool1 = bool_middle_1;
+                        bool2 = (index % vuGridSize) < (vuShowNextItemsBounds[1] + vuShowNextItemsBounds[2]);
+                        isIn12 = bool1 && bool2;
+
+                        bool1 = (the_index / vuGridSize) > vuGridSize - (vuShowNextItemsBounds[1] + vuShowNextItemsBounds[2]);
+                        bool2 = (index % vuGridSize) < (vuShowNextItemsBounds[1] + vuShowNextItemsBounds[2]);
+                        isIn13 = bool1 && bool2;
+
+                        bool1 = bool_middle_1;
+                        bool2 = bool_middle_2;
+                        isIn22 = bool1 && bool2;
+
+                        bool1 = (index / vuGridSize) < (vuShowNextItemsBounds[1] + vuShowNextItemsBounds[2]);
+                        bool2 = (index % vuGridSize) > (vuGridSize - (vuShowNextItemsBounds[1] + vuShowNextItemsBounds[2]) - 1);
+                        isIn31 = bool1 && bool2;
+
+                        bool1 = bool_middle_1;
+                        bool2 = (index % vuGridSize) > (vuGridSize - (vuShowNextItemsBounds[1] + vuShowNextItemsBounds[2]) - 1);
+                        isIn32 = bool1 && bool2;
+
+                        bool1 = (the_index / vuGridSize) > vuGridSize - (vuShowNextItemsBounds[1] + vuShowNextItemsBounds[2]);
+                        bool2 = bool_middle_2;
+                        isIn23 = bool1 && bool2;
+
+                        bool1 = (the_index / vuGridSize) > vuGridSize - (vuShowNextItemsBounds[1] + vuShowNextItemsBounds[2]);
+                        bool2 = (index % vuGridSize) > (vuGridSize - (vuShowNextItemsBounds[1] + vuShowNextItemsBounds[2]) - 1);
+                        isIn33 = bool1 && bool2;
+
+                        if (vuShowNextItemsCount === 0) vuDisplayResultBool = isIn11;
+                        if (vuShowNextItemsCount === 1) vuDisplayResultBool = isIn21;
+                        if (vuShowNextItemsCount === 2) vuDisplayResultBool = isIn12;
+                        if (vuShowNextItemsCount === 3) vuDisplayResultBool = isIn13;
+                        if (vuShowNextItemsCount === 4) vuDisplayResultBool = isIn22;
+                        if (vuShowNextItemsCount === 5) vuDisplayResultBool = isIn31;
+                        if (vuShowNextItemsCount === 6) vuDisplayResultBool = isIn32;
+                        if (vuShowNextItemsCount === 7) vuDisplayResultBool = isIn23;
+                        if (vuShowNextItemsCount === 8) vuDisplayResultBool = isIn33;
+
+                        if (vuDisplayNine === 2) {
+                            if (vuShowNextItemsCount === 0) vuDisplayResultBool = isIn11;
+                            if (vuShowNextItemsCount === 1) vuDisplayResultBool = isIn12;
+                            if (vuShowNextItemsCount === 2) vuDisplayResultBool = isIn13;
+                            if (vuShowNextItemsCount === 3) vuDisplayResultBool = isIn23;
+                            if (vuShowNextItemsCount === 4) vuDisplayResultBool = isIn33;
+                            if (vuShowNextItemsCount === 5) vuDisplayResultBool = isIn32;
+                            if (vuShowNextItemsCount === 6) vuDisplayResultBool = isIn31;
+                            if (vuShowNextItemsCount === 7) vuDisplayResultBool = isIn21;
+                            if (vuShowNextItemsCount === 8) vuDisplayResultBool = isIn22;
+                        }
+                    }
+
+                    if (vuDisplayResultBool) {
+                        const tile = vuGridContainer.children[index];
+                        tile.classList.add('active');
+                        vuShowNextItemsSequence.add(index);
+                    }
+                });
+
+                vuShowNextItemsCount += 1;
+            } else {
+                vuShowNextItemsCount = 0;
+            }
+        }
+
+        function vuShowSequence(sequence) {
+            // original code left empty; we keep it
+        }
+
+        function vuPlaySequences() {
+            let delay = 0;
+            vuSequences.forEach((sequence, idx) => {
+                setTimeout(() => {
+                    vuClearGridInput();
+                    vuShowSequence(sequence);
+                    if (idx === vuSequences.length - 1) {
+                        vuCurrentSequenceIndex = 0;
+                        vuUserGridInput = [];
+                    }
+                }, delay);
+                delay += vuShowTime;
+            });
+        }
+
+        function vuClearGridInput() {
+            for (let i = 0; i < vuGridSize * vuGridSize; i++) {
+                vuGridContainer.children[i].classList.remove('correct', 'wrong');
+            }
+        }
+
+        function vuHandleTileClick(index) {
+            const tile = vuGridContainer.children[index];
+            tile.classList.toggle('correct');
+
+            const gridInput = vuUserGridInput[vuCurrentSequenceIndex] || [];
+            if (gridInput.includes(index)) {
+                vuUserGridInput[vuCurrentSequenceIndex] = gridInput.filter(i => i !== index);
+            } else {
+                vuUserGridInput[vuCurrentSequenceIndex] = [...gridInput, index];
+            }
+        }
+
+        function vuSubmitGrid() {
+            const userInputGrid = vuUserGridInput[vuCurrentSequenceIndex] || [];
+            const correctGrid = vuSequences[vuCurrentSequenceIndex];
+
+            if (
+                userInputGrid.length === correctGrid.length &&
+                userInputGrid.every(index => correctGrid.includes(index))
+            ) {
+                vuGridContainer.classList.add('shrink');
+                setTimeout(() => {
+                    vuGridContainer.classList.remove('shrink');
+                    vuClearGridInput();
+                    vuCurrentSequenceIndex++;
+
+                    if (vuCurrentSequenceIndex === vuSequences.length) {
+                        vuRecordTrial(true);
+                        setTimeout(vuNextSpan, vuShowTime);
+                    }
+                }, 300);
+            } else {
+                vuRecordTrial(false);
+                vuConsecutiveFailures++;
+                if (vuConsecutiveFailures === 1) {
+                    setTimeout(() => vuRestartSpan(), vuShowTime);
+                } else if (vuConsecutiveFailures >= 2) {
+                    setTimeout(() => vuPreviousSpan(), vuShowTime);
+                }
+            }
+        }
+
+        function vuCheckSequence() {
+            const userSelection = [];
+            Array.from(vuGridContainer.children).forEach((tile, index) => {
+                if (tile.classList.contains('correct')) {
+                    userSelection.push(index);
+                }
+            });
+
+            const currentSequence = vuSequences[vuCurrentSequenceIndex] || [];
+
+            if (userSelection.length === currentSequence.length && userSelection.every(index => currentSequence.includes(index))) {
+                document.getElementById('vuInfoLabel').textContent = 'Correct ' + userSelection.length.toString();
+                alert('Correct! The selected items match the initial sequence.');
+                // score is number of tiles in last correctly made level
+                vuScoreCount = currentSequence.length;
+            } else {
+                document.getElementById('vuInfoLabel').textContent = 'Incorrect ' + userSelection.length.toString();
+                alert('Incorrect! The selected items do not match the initial sequence.');
+                userSelection.forEach(index => {
+                    const tile = vuGridContainer.children[index];
+                    if (!currentSequence.includes(index)) {
+                        tile.classList.remove('correct');
+                        tile.classList.add('wrong');
+                    }
+                });
+            }
+
+            // count wrong squares and treat as error if >= threshold
+            let wrongSquares = 0;
+            for (let i = 0; i < vuGridSize * vuGridSize; i++) {
+                if (vuGridContainer.children[i].classList.contains('wrong')) {
+                    wrongSquares++;
+                }
+            }
+
+            if (wrongSquares >= appSettings.visualWrongSquaresAtError) {
+                vuErrorCount++;
+                vuErrorLabel.textContent = vuErrorCount;
+                checkErrorThreshold('visualUntimed', vuScoreCount, vuErrorCount);
+            }
+
+            // IMPORTANT: do NOT call vuSubmitGrid here, so squares stay visible like original app
+        }
+
+        function vuRestartSpan() {
+            vuStartSpan();
+        }
+
+        function vuNextSpan() {
+            vuSpanLength++;
+            vuConsecutiveFailures = 0;
+            vuUpdateSpanLength();
+            vuStartSpan();
+        }
+
+        function vuPreviousSpan() {
+            vuSpanLength = Math.max(1, vuSpanLength - 1);
+            vuConsecutiveFailures = 0;
+            vuUpdateSpanLength();
+            vuStartSpan();
+        }
+
+        function vuRecordTrial(success) {
+            vuTrialSpanLengths.push(vuSpanLength);
+            vuTrialResults.push(success ? 1 : 0);
+
+            if (vuTrialSpanLengths.length >= 14) {
+                vuEndGame();
+            }
+        }
+
+        function vuCalculateEstimatedSpanLength() {
+            const spanData = {};
+            vuTrialSpanLengths.forEach((span, idx) => {
+                if (!spanData[span]) spanData[span] = { count: 0, successes: 0 };
+                spanData[span].count++;
+                spanData[span].successes += vuTrialResults[idx];
+            });
+
+            let totalSuccessRate = 0;
+            let maxSpan = 0;
+
+            for (const span in spanData) {
+                const { count, successes } = spanData[span];
+                const successRate = successes / count;
+                totalSuccessRate += successRate;
+                if (successes > 0) maxSpan = Math.max(maxSpan, parseInt(span));
+            }
+
+            return { estimatedSpan: totalSuccessRate + 0.5, maxSpanAchieved: maxSpan };
+        }
+
+        function vuEndGame() {
+            const { estimatedSpan, maxSpanAchieved } = vuCalculateEstimatedSpanLength();
+
+            vuGameOverDisplay.style.display = 'block';
+            vuGameOverDisplay.innerHTML = 'Estimated span length: ' + estimatedSpan.toFixed(2) +
+                '<br>Maximum span achieved: ' + maxSpanAchieved;
+            vuGridContainer.innerHTML = '';
+        }
+
+        function vuUpdateSpanLength() {
+            vuSpanLengthDisplay.textContent = vuSpanLength;
+        }
+
+        function vuStartSpan() {
+            vuGenerateSequences(vuSpanLength);
+            vuPlaySequences();
+        }
+
+        function vuInitGame() {
+            vuSpanLength = 1;
+            vuSequences = [];
+            vuCurrentSequenceIndex = 0;
+            vuUserGridInput = [];
+            vuTrialSpanLengths = [];
+            vuTrialResults = [];
+            vuConsecutiveFailures = 0;
+            vuScoreCount = 0;
+            vuErrorCount = 0;
+            vuErrorLabel.textContent = '0';
+
+            vuUpdateSpanLength();
+            vuGameOverDisplay.style.display = 'none';
+            vuCreateGrid();
+            vuStartSpan();
+        }
+
+        document.addEventListener('keydown', (event) => {
+            if (document.getElementById('visualUntimed').classList.contains('active')) {
+                if (event.key === 'Enter' && vuUserGridInput[vuCurrentSequenceIndex] != null) {
+                    vuSubmitGrid();
+                }
+            }
+        });
+
+        /***********************
+         * DOUBLE MEMORY GAME
+         ***********************/
+        const dmDisplayContainer = document.getElementById('dmDisplayContainer');
+        const dmSymbolDisplay = document.getElementById('dmSymbolDisplay');
+        const dmColorButtonsContainer = document.getElementById('dmColorButtons');
+        const dmSymbolButtonsContainer = document.getElementById('dmSymbolButtons');
+        const dmBeginButton = document.getElementById('dmBeginButton');
+        const dmNextTrialButton = document.getElementById('dmNextTrialButton');
+        const dmNextItemButton = document.getElementById('dmNextItemButton');
+        const dmSpanDisplay = document.getElementById('dmSpanDisplay');
+        const dmPhaseDisplay = document.getElementById('dmPhaseDisplay');
+        const dmStartingSpanInput = document.getElementById('dmStartingSpan');
+        const dmReverseModeCheckbox = document.getElementById('dmReverseMode');
+
+        const dmColors = ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown', 'cyan', 'lime'];
+        const dmSymbols = ['!', '?', '@', '#', ':', '$', '%', '^', '&', '*', '( )', '+', '=', '-', '{ }', '/'];
+
+        let dmColorSequence = [];
+        let dmSymbolSequence = [];
+        let dmUserColorSequence = [];
+        let dmUserSymbolSequence = [];
+        let dmSpanLength = 2;
+        let dmCurrentIndex = 0;
+        let dmPhase = 'show'; // 'show', 'color', 'symbol'
+
+        function dmInitializeButtons() {
+            dmColorButtonsContainer.innerHTML = '';
+            dmColors.forEach(color => {
+                const button = document.createElement('button');
+                button.className = 'dm-color-button';
+                button.style.backgroundColor = color;
+                button.dataset.color = color;
+                button.addEventListener('click', () => dmHandleColorInput(color));
+                dmColorButtonsContainer.appendChild(button);
+            });
+
+            dmSymbolButtonsContainer.innerHTML = '';
+            dmSymbols.forEach(symbol => {
+                const button = document.createElement('button');
+                button.className = 'dm-symbol-button';
+                button.textContent = symbol;
+                button.dataset.symbol = symbol;
+                button.addEventListener('click', () => dmHandleSymbolInput(symbol));
+                dmSymbolButtonsContainer.appendChild(button);
+            });
+        }
+
+        function dmGenerateSequence() {
+            dmColorSequence = Array.from({ length: dmSpanLength }, () =>
+                dmColors[Math.floor(Math.random() * dmColors.length)]);
+            dmSymbolSequence = Array.from({ length: dmSpanLength }, () =>
+                dmSymbols[Math.floor(Math.random() * dmSymbols.length)]);
+        }
+
+        function dmShowNextItem() {
+            if (dmCurrentIndex >= dmSpanLength) {
+                dmNextItemButton.classList.add('hidden');
+                dmPhase = 'color';
+                dmPhaseDisplay.textContent = 'Phase: Colors';
+                dmColorButtonsContainer.classList.remove('hidden');
+                return;
+            }
+
+            dmDisplayContainer.style.backgroundColor = dmColorSequence[dmCurrentIndex];
+            dmSymbolDisplay.textContent = dmSymbolSequence[dmCurrentIndex];
+            dmCurrentIndex++;
+
+            setTimeout(() => {
+                dmDisplayContainer.style.backgroundColor = '';
+                dmSymbolDisplay.textContent = '';
+            }, 2000);
+        }
+
+        function dmHandleColorInput(color) {
+            dmUserColorSequence.push(color);
+            if (dmUserColorSequence.length === dmSpanLength) {
+                dmCheckColorSequence();
+            }
+        }
+
+        function dmHandleSymbolInput(symbol) {
+            dmUserSymbolSequence.push(symbol);
+            if (dmUserSymbolSequence.length === dmSpanLength) {
+                dmCheckSymbolSequence();
+            }
+        }
+
+        function dmCheckColorSequence() {
+            const reverseMode = dmReverseModeCheckbox.checked;
+            const target = reverseMode ? [...dmColorSequence].reverse() : dmColorSequence;
+            const isCorrect = JSON.stringify(dmUserColorSequence) === JSON.stringify(target);
+            if (isCorrect) {
+                dmPhase = 'symbol';
+                dmPhaseDisplay.textContent = 'Phase: Symbols';
+                dmColorButtonsContainer.classList.add('hidden');
+                dmSymbolButtonsContainer.classList.remove('hidden');
+                dmUserColorSequence = [];
+            } else {
+                alert('Incorrect color sequence! Try again.');
+                dmResetPhase();
+            }
+        }
+
+        function dmCheckSymbolSequence() {
+            const reverseMode = dmReverseModeCheckbox.checked;
+            const target = reverseMode ? [...dmSymbolSequence].reverse() : dmSymbolSequence;
+            const isCorrect = JSON.stringify(dmUserSymbolSequence) === JSON.stringify(target);
+            if (isCorrect) {
+                dmSpanLength += Math.floor(dmSpanLength / 8) + 1;
+                alert('Correct! Moving to span length ' + dmSpanLength);
+                recordStat('doubleMemory', dmSpanLength, 0);
+            } else {
+                alert('Incorrect symbol sequence! Starting over.');
+                dmSpanLength = Math.max(2, dmSpanLength - 1);
+                recordStat('doubleMemory', dmSpanLength, 1);
+            }
+            dmResetGame();
+        }
+
+        function dmResetPhase() {
+            dmUserColorSequence = [];
+            dmUserSymbolSequence = [];
+            dmCurrentIndex = 0;
+            dmPhase = 'show';
+            dmPhaseDisplay.textContent = 'Phase: Showing sequence';
+            dmColorButtonsContainer.classList.add('hidden');
+            dmSymbolButtonsContainer.classList.add('hidden');
+            dmNextTrialButton.classList.remove('hidden');
+            dmSpanDisplay.textContent = 'Span length: ' + dmSpanLength;
+        }
+
+        function dmResetGame() {
+            dmResetPhase();
+            dmGenerateSequence();
+        }
+
+        dmBeginButton.addEventListener('click', () => {
+            dmSpanLength = parseInt(dmStartingSpanInput.value, 10) || 2;
+            dmSpanDisplay.textContent = 'Span length: ' + dmSpanLength;
+            dmBeginButton.classList.add('hidden');
+            dmNextTrialButton.classList.remove('hidden');
+            dmInitializeButtons();
+            startNewStatGame('doubleMemory');
+        });
+
+        dmNextTrialButton.addEventListener('click', () => {
+            dmResetGame();
+            dmNextItemButton.classList.remove('hidden');
+            dmNextTrialButton.classList.add('hidden');
+        });
+
+        dmNextItemButton.addEventListener('click', () => {
+            dmShowNextItem();
+        });
+
+        dmSpanDisplay.textContent = 'Span length: ' + dmSpanLength;
+
+        // When doubleMemory screen is opened, ensure UI is in initial state
+        (function initDMOnce() {
+            const observer = new MutationObserver(() => {
+                if (document.getElementById('doubleMemory').classList.contains('active')) {
+                    dmSpanLength = parseInt(dmStartingSpanInput.value, 10) || 2;
+                    dmSpanDisplay.textContent = 'Span length: ' + dmSpanLength;
+                    dmPhase = 'show';
+                    dmPhaseDisplay.textContent = 'Phase: Showing sequence';
+                    dmUserColorSequence = [];
+                    dmUserSymbolSequence = [];
+                    dmCurrentIndex = 0;
+                    dmColorButtonsContainer.classList.add('hidden');
+                    dmSymbolButtonsContainer.classList.add('hidden');
+                    dmNextItemButton.classList.add('hidden');
+                    dmNextTrialButton.classList.add('hidden');
+                    dmBeginButton.classList.remove('hidden');
+                    dmDisplayContainer.style.backgroundColor = '';
+                    dmSymbolDisplay.textContent = '';
+                    observer.disconnect();
+                }
+            });
+            observer.observe(document.body, { attributes: true, subtree: true, attributeFilter: ['class'] });
+        })();
+    </script>
 </body>
 </html>
-```
