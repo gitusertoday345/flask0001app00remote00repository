@@ -4,40 +4,108 @@
     <meta charset="UTF-8">
     <title>Unified Memory Games</title>
     <style>
+        :root {
+            --accent-light: #444444;
+            --accent-dark: #2ecc71;
+            --bg-light: #ffffff;
+            --bg-dark: #000000;
+            --card-light: #f7f7f7;
+            --card-dark: #1a1a1a;
+            --text-light: #000;
+            --text-dark: #eee;
+            --button-radius: 12px;
+        }
+
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #fff;
-            color: #000;
+            background: var(--bg-light);
+            color: var(--text-light);
+            transition: 0.3s;
+            font-size: 18px;
         }
 
         body.dark {
-            background-color: #000;
-            color: #eee;
+            background: var(--bg-dark);
+            color: var(--text-dark);
         }
 
         .top-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 16px;
-            background-color: #444;
+            padding: 16px 20px;
+            background: var(--accent-light);
             color: white;
+            font-size: 26px;
+            font-weight: bold;
         }
 
         body.dark .top-bar {
-            background-color: #111;
-            color: #fff;
+            background: var(--accent-dark);
         }
 
-        .main-buttons button {
-            margin-right: 8px;
+        .top-title {
+            margin: 0;
+        }
+
+        .top-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        body.mobile .top-buttons {
+            display: none;
+        }
+
+        .mobile-menu {
+            display: none;
+            margin-top: 10px;
+            padding: 0 20px;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        body.mobile .mobile-menu {
+            display: flex;
+        }
+
+        .main-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        button {
+            padding: 14px 20px;
+            border-radius: var(--button-radius);
+            border: 2px solid var(--accent-light);
+            background: transparent;
+            color: inherit;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 24px;
+            font-weight: 500;
+        }
+
+        body.dark button {
+            border-color: var(--accent-dark);
+        }
+
+        button:hover {
+            background: var(--accent-light);
+            color: white;
+        }
+
+        body.dark button:hover {
+            background: var(--accent-dark);
+            color: white;
         }
 
         .screen {
             display: none;
-            padding: 16px;
+            padding: 24px;
         }
 
         .screen.active {
@@ -45,26 +113,34 @@
         }
 
         .card {
-            max-width: 900px;
+            max-width: 1300px;
+            width: 100%;
+            box-sizing: border-box;
             margin: 0 auto;
-            border: 1px solid #ccc;
-            padding: 16px;
-            border-radius: 4px;
-            background-color: #fafafa;
+            background: var(--card-light);
+            padding: 28px;
+            border-radius: 14px;
+            border: 2px solid var(--accent-light);
         }
 
         body.dark .card {
-            background-color: #222;
-            border-color: #666;
+            background: var(--card-dark);
+            border-color: var(--accent-dark);
+        }
+
+        h1, h2, h3, p, label {
+            font-size: 1.5em;
         }
 
         .row {
             display: flex;
             gap: 16px;
+            flex-wrap: wrap;
         }
 
         .col {
             flex: 1;
+            min-width: 220px;
         }
 
         label {
@@ -78,6 +154,8 @@
             width: 100%;
             box-sizing: border-box;
             margin-top: 4px;
+            font-size: 0.85em;
+            padding: 6px;
         }
 
         textarea {
@@ -87,12 +165,115 @@
         .stats-block {
             white-space: pre-wrap;
             font-family: monospace;
-            background-color: #f0f0f0;
-            padding: 8px;
+            background: rgba(0,0,0,0.05);
+            padding: 16px;
+            border-radius: 10px;
+            font-size: 18px;
         }
 
         body.dark .stats-block {
-            background-color: #333;
+            background: rgba(255,255,255,0.1);
+        }
+
+        /* MAIN MENU GAME BUTTON GRID */
+        .game-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 44px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .game-buttons button {
+            min-width: 0;
+            width: 100%;
+            box-sizing: border-box;
+            white-space: normal;
+        }
+
+        body.mobile .game-buttons,
+        body.mobile .main-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 42px;
+        }
+
+        body.mobile .game-buttons button,
+        body.mobile .main-buttons button {
+            flex: 1 1 calc(50% - 40px);
+            max-width: 320px;
+        }
+
+        /* MONITOR (non-mobile) MODE: text scaled well down */
+        body:not(.mobile) {
+            font-size: 8px;
+        }
+
+        body:not(.mobile) button {
+            font-size: 11px;
+        }
+
+        body:not(.mobile) .stats-block {
+            font-size: 8px;
+        }
+
+        /* MOBILE MODE (default view): text bumped up */
+        body.mobile {
+            font-size: 39px;
+        }
+
+        body.mobile button {
+            padding: 20px 28px;
+            font-size: 42px;
+        }
+
+        body.mobile .stats-block {
+            font-size: 27px;
+        }
+
+        /* Keep the double-memory control buttons at their designed fixed size
+           regardless of mobile/monitor text scaling, since they're laid out
+           on a fixed 80px grid and rely on a specific font size to fit. */
+        body.mobile .dm-color-button,
+        body.mobile .dm-symbol-button,
+        body:not(.mobile) .dm-color-button,
+        body:not(.mobile) .dm-symbol-button {
+            font-size: 24px;
+            padding: 0;
+        }
+
+        /* GAME OVER / MAX ERRORS OVERLAY (replaces alert() for the
+           error-threshold notice, same as the counter games app) */
+        .max-errors-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.88);
+            color: #fff;
+            z-index: 9999;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .max-errors-overlay.active {
+            display: flex;
+        }
+
+        .max-errors-text {
+            font-size: 2.2em;
+            font-weight: bold;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+            color: #e74c3c;
+        }
+
+        .max-errors-overlay p {
+            margin: 6px 0;
+            font-size: 1.2em;
         }
 
         .set-game-container {
@@ -261,11 +442,11 @@
 
         .info {
             margin: 10px;
-            font-size: 18px;
+            font-size: 1em;
         }
 
         .game-over {
-            font-size: 24px;
+            font-size: 1.3em;
             color: #333;
             margin: 20px;
         }
@@ -274,8 +455,8 @@
             color: #eee;
         }
 
-        /* Dark mode for buttons and fields */
-        body.dark button,
+        /* Dark mode for fields (button dark styling is handled by the
+           shared button theme above, so it's intentionally left out here) */
         body.dark input,
         body.dark textarea,
         body.dark select {
@@ -290,17 +471,24 @@
         }
     </style>
 </head>
-<body>
+<body class="dark mobile">
     <div class="top-bar">
-        <div>
-            <strong>Unified Memory Games</strong>
-        </div>
-        <div class="main-buttons">
+        <div class="top-title">Unified Memory Games</div>
+        <div class="top-buttons">
             <button onclick="showScreen('main')">Main</button>
             <button onclick="showScreen('generator')">Data generator</button>
             <button onclick="showScreen('stats')">Statistics</button>
             <button onclick="toggleDarkMode()">Toggle dark mode</button>
+            <button onclick="toggleMobileMode()">Mobile/Monitor</button>
         </div>
+    </div>
+
+    <div class="mobile-menu">
+        <button onclick="showScreen('main')">Main</button>
+        <button onclick="showScreen('generator')">Data generator</button>
+        <button onclick="showScreen('stats')">Statistics</button>
+        <button onclick="toggleDarkMode()">Toggle dark mode</button>
+        <button onclick="toggleMobileMode()">Mobile/Monitor</button>
     </div>
 
     <!-- MAIN SCREEN -->
@@ -308,17 +496,17 @@
         <div class="card">
             <h1>Main menu</h1>
             <p>Select a game or open data generator/statistics.</p>
-            <div class="main-buttons">
+            <div class="game-buttons">
                 <button onclick="startSetGame('color')">Color set</button>
                 <button onclick="startSetGame('symbol')">Symbol set</button>
                 <button onclick="startSetGame('numerical')">Numerical set</button>
                 <button onclick="startSetGame('grid')">Grid set</button>
             </div>
-            <div class="main-buttons" style="margin-top:20px;">
+            <div class="game-buttons" style="margin-top:30px;">
                 <button onclick="showScreen('visualUntimed')">Visual untimed</button>
                 <button onclick="showScreen('doubleMemory')">Double memory</button>
             </div>
-            <div style="margin-top:20px;">
+            <div class="button-row" style="margin-top:35px; display:flex; flex-wrap:wrap; gap:18px;">
                 <button onclick="showScreen('generator')">Open data generator</button>
                 <button onclick="showScreen('stats')">Open statistics</button>
             </div>
@@ -601,11 +789,24 @@
         </div>
     </div>
 
+    <!-- MAX ERRORS NOTICE (replaces alert() for the error-threshold notification,
+         reliable across mobile browsers, same approach as the counters app) -->
+    <div id="maxErrorsOverlay" class="max-errors-overlay">
+        <div class="max-errors-text">MAX ERRORS REACHED</div>
+        <p>Reached max number of errors (<span id="meThreshold"></span>)</p>
+        <p>Score at this moment: <span id="meScore"></span></p>
+        <p class="small-note">You can continue playing.</p>
+        <div style="margin-top:24px;">
+            <button onclick="closeMaxErrorsNotice()">Continue playing</button>
+        </div>
+    </div>
+
     <script>
         /***********************
          * GLOBAL APP STATE
          ***********************/
-        let darkMode = false;
+        let darkMode = true;
+        let mobileMode = true;
 
         function showScreen(id) {
             const screens = document.querySelectorAll('.screen');
@@ -627,6 +828,11 @@
         function toggleDarkMode() {
             darkMode = !darkMode;
             document.body.classList.toggle('dark', darkMode);
+        }
+
+        function toggleMobileMode() {
+            mobileMode = !mobileMode;
+            document.body.classList.toggle('mobile', mobileMode);
         }
 
         /***********************
@@ -895,10 +1101,20 @@
             const threshold = appSettings.notifyErrors;
             if (errors === threshold) {
                 recordStat(gameKey, score, errors);
-                alert('You reached max number of errors (' + threshold + '). Score at this moment: ' + score + '. You can continue playing.');
+                showMaxErrorsNotice(score, threshold);
             } else {
                 recordStat(gameKey, score, errors);
             }
+        }
+
+        function showMaxErrorsNotice(score, threshold) {
+            document.getElementById('meThreshold').textContent = threshold;
+            document.getElementById('meScore').textContent = score;
+            document.getElementById('maxErrorsOverlay').classList.add('active');
+        }
+
+        function closeMaxErrorsNotice() {
+            document.getElementById('maxErrorsOverlay').classList.remove('active');
         }
 
         /***********************
