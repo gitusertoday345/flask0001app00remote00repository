@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -243,36 +244,66 @@
             padding: 0;
         }
 
-        /* GAME OVER / MAX ERRORS OVERLAY (replaces alert() for the
-           error-threshold notice, same as the counter games app) */
-        .max-errors-overlay {
+        /* COLOR PICKERS (accent color customization) */
+        .color-picker {
+            margin: 12px 0;
+            width: 80px;
+            height: 50px;
+            border: none;
+            cursor: pointer;
+        }
+
+        /* Only show the picker relevant to the current dark/light mode */
+        body:not(.dark) #accentDarkLabel,
+        body:not(.dark) #accentPickerDark,
+        body.dark #accentLightLabel,
+        body.dark #accentPickerLight {
             display: none;
+        }
+
+        /* MAX ERRORS NOTICE — small floating text label that appears then
+           disappears on its own (replaces the old full-screen popup, which
+           wasn't showing reliably on some mobile browsers). */
+        .max-errors-overlay {
             position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.88);
+            top: 18px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-16px);
+            background: rgba(231, 76, 60, 0.96);
             color: #fff;
             z-index: 9999;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
             text-align: center;
-            padding: 40px 20px;
+            padding: 14px 22px;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease, transform 0.25s ease;
+            max-width: 90vw;
         }
 
         .max-errors-overlay.active {
-            display: flex;
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
         }
 
         .max-errors-text {
-            font-size: 2.2em;
+            font-size: 1.3em;
             font-weight: bold;
-            letter-spacing: 1px;
-            margin-bottom: 16px;
-            color: #e74c3c;
+            letter-spacing: 0.5px;
+            margin: 0 0 4px 0;
         }
 
         .max-errors-overlay p {
-            margin: 6px 0;
+            margin: 2px 0;
+            font-size: 1em;
+        }
+
+        body.mobile .max-errors-text {
+            font-size: 1.6em;
+        }
+
+        body.mobile .max-errors-overlay p {
             font-size: 1.2em;
         }
 
@@ -294,14 +325,46 @@
             display: inline-block;
             margin: 2px;
             border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+
+        /* Mobile: color squares fill the available row width — 4 squares per
+           row, more than 3x bigger than the default 35px, with a visible
+           gap between them. */
+        #colorCurrentSequence {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        body.mobile #colorCurrentSequence .color-square {
+            flex: 1 1 0;
+            max-width: 150px;
+            height: auto;
+            aspect-ratio: 1 / 1;
+            margin: 0;
         }
 
         .grid-square {
             width: 20px;
             height: 20px;
             display: inline-block;
-            margin: 1px;
             border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+
+        /* Grid set squares: 3x bigger on mobile, 2x bigger on monitor, with
+           a small, even gap between both rows and columns — matching how
+           the grid looks in the Visual game. */
+        body.mobile .grid-square {
+            width: 60px;
+            height: 60px;
+        }
+
+        body:not(.mobile) .grid-square {
+            width: 40px;
+            height: 40px;
         }
 
         .black { background-color: black; }
@@ -309,6 +372,15 @@
 
         #gridCurrentSequence {
             text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .grid-row {
+            display: flex;
+            gap: 5px;
         }
 
         /* Visual untimed */
@@ -376,11 +448,76 @@
             justify-content: center;
         }
 
+        /* Mobile: square + symbol 3x bigger, capped so it still fits the screen */
+        body.mobile .dm-display-container {
+            width: min(450px, 90vw);
+            height: min(450px, 90vw);
+        }
+
         .dm-symbol-text {
             font-size: 48px;
             color: white;
             text-shadow: 2px 2px 4px black;
             position: absolute;
+        }
+
+        body.mobile .dm-symbol-text {
+            font-size: 144px;
+        }
+
+        /* Shows the user's taps (colors/symbols) during the recall phase,
+           at the top of the screen, so they can confirm each tap registered. */
+        .dm-input-display {
+            min-height: 44px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .dm-input-chip {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            border: 1px solid #999;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            background-color: #eee;
+            color: #000;
+            box-sizing: border-box;
+        }
+
+        body.dark .dm-input-chip {
+            border-color: #666;
+        }
+
+        .dm-input-chip-symbol {
+            background-color: #eee;
+        }
+
+        body.dark .dm-input-chip-symbol {
+            background-color: #222;
+            color: #eee;
+        }
+
+        body.mobile .dm-input-chip {
+            width: 56px;
+            height: 56px;
+            font-size: 28px;
+        }
+
+        /* Reverse-mode checkbox: previously near-invisible default size;
+           now sized to roughly match the width of two letters of its label. */
+        #dmReverseMode {
+            width: 1.4em;
+            height: 1.4em;
+            margin-right: 10px;
+            vertical-align: middle;
+            cursor: pointer;
         }
 
         .dm-buttons-container {
@@ -510,6 +647,14 @@
                 <button onclick="showScreen('generator')">Open data generator</button>
                 <button onclick="showScreen('stats')">Open statistics</button>
             </div>
+
+            <h3 style="margin-top:40px;">Customize UI</h3>
+
+            <p id="accentLightLabel">Accent color for light mode (<span id="accentLightModeName">mobile</span>):</p>
+            <input type="color" id="accentPickerLight" class="color-picker" value="#444444" onchange="updateAccentColorLight()">
+
+            <p id="accentDarkLabel">Accent color for dark mode (<span id="accentDarkModeName">mobile</span>):</p>
+            <input type="color" id="accentPickerDark" class="color-picker" value="#2ecc71" onchange="updateAccentColorDark()">
         </div>
     </div>
 
@@ -756,6 +901,10 @@
         <div class="card">
             <h2>Double memory</h2>
 
+            <!-- Shows the sequence of colors/symbols the user has tapped so
+                 far during recall, so they can confirm taps were registered -->
+            <div id="dmInputDisplay" class="dm-input-display"></div>
+
             <div class="flex-between">
                 <div>
                     <label for="dmStartingSpan">Starting span length:</label>
@@ -772,6 +921,7 @@
             <div style="margin-top:10px;">
                 <button id="dmBeginButton">Begin</button>
                 <button id="dmNextTrialButton" class="hidden">Next trial</button>
+                <button onclick="dmEndGame()">End game</button>
                 <button onclick="showScreen('main')">Back to main</button>
             </div>
 
@@ -789,16 +939,12 @@
         </div>
     </div>
 
-    <!-- MAX ERRORS NOTICE (replaces alert() for the error-threshold notification,
-         reliable across mobile browsers, same approach as the counters app) -->
+    <!-- MAX ERRORS NOTICE — small text label that appears briefly then fades
+         out on its own (replaces the old full-screen popup, which wasn't
+         reliably showing on some mobile browsers, e.g. iPad mini) -->
     <div id="maxErrorsOverlay" class="max-errors-overlay">
-        <div class="max-errors-text">MAX ERRORS REACHED</div>
-        <p>Reached max number of errors (<span id="meThreshold"></span>)</p>
-        <p>Score at this moment: <span id="meScore"></span></p>
-        <p class="small-note">You can continue playing.</p>
-        <div style="margin-top:24px;">
-            <button onclick="closeMaxErrorsNotice()">Continue playing</button>
-        </div>
+        <div class="max-errors-text">Max errors reached (<span id="meThreshold"></span>)</div>
+        <p>Score: <span id="meScore"></span> — you can keep playing</p>
     </div>
 
     <script>
@@ -817,22 +963,73 @@
                 renderStats();
             }
             if (id === 'visualUntimed') {
-                // start a fresh visual game each time screen is opened
+                // Start the visual game from the state it would be in after
+                // pressing "Next level" once, rather than the raw level 1 state.
                 vuGridSize = 3;
                 vuTilesToActivate = 4;
                 vuInitGame();
+                vuGoNextLevel();
                 startNewStatGame('visualUntimed');
+            }
+            if (id === 'doubleMemory') {
+                dmResetToInitial();
             }
         }
 
         function toggleDarkMode() {
             darkMode = !darkMode;
             document.body.classList.toggle('dark', darkMode);
+            applyAccentColor();
         }
 
         function toggleMobileMode() {
             mobileMode = !mobileMode;
             document.body.classList.toggle('mobile', mobileMode);
+            applyAccentColor();
+        }
+
+        /***********************
+         * ACCENT COLORS
+         * Separate accent color is remembered for every combination of
+         * light/dark mode AND mobile/monitor mode (4 total), since accent
+         * color was previously set up that way.
+         ***********************/
+        let accentColors = {
+            light_mobile: '#444444',
+            light_monitor: '#444444',
+            dark_mobile: '#2ecc71',
+            dark_monitor: '#2ecc71'
+        };
+
+        function accentKey() {
+            return (darkMode ? 'dark' : 'light') + '_' + (mobileMode ? 'mobile' : 'monitor');
+        }
+
+        function applyAccentColor() {
+            const key = accentKey();
+            const color = accentColors[key];
+            document.documentElement.style.setProperty(darkMode ? '--accent-dark' : '--accent-light', color);
+
+            const modeName = mobileMode ? 'mobile' : 'monitor';
+            document.getElementById('accentLightModeName').textContent = modeName;
+            document.getElementById('accentDarkModeName').textContent = modeName;
+
+            const lightPicker = document.getElementById('accentPickerLight');
+            const darkPicker = document.getElementById('accentPickerDark');
+            if (lightPicker) lightPicker.value = accentColors[(mobileMode ? 'light_mobile' : 'light_monitor')];
+            if (darkPicker) darkPicker.value = accentColors[(mobileMode ? 'dark_mobile' : 'dark_monitor')];
+        }
+
+        function updateAccentColorLight() {
+            const color = document.getElementById('accentPickerLight').value;
+            accentColors[mobileMode ? 'light_mobile' : 'light_monitor'] = color;
+            applyAccentColor();
+        }
+
+        function updateAccentColorDark() {
+            const color = document.getElementById('accentPickerDark').value;
+            accentColors[mobileMode ? 'dark_mobile' : 'dark_monitor'] = color;
+            applyAccentColor();
         }
 
         /***********************
@@ -1086,12 +1283,14 @@
         }
 
         function endCurrentGame(gameKey) {
-            // For visualUntimed, record final score/errors and reset to very first level
+            // For visualUntimed, record final score/errors and reset to the
+            // "one Next level press" starting state, same as opening the screen.
             if (gameKey === 'visualUntimed') {
                 recordStat('visualUntimed', vuScoreCount, vuErrorCount);
                 vuGridSize = 3;
                 vuTilesToActivate = 4;
                 vuInitGame();
+                vuGoNextLevel();
                 return;
             }
             showScreen('main');
@@ -1107,10 +1306,15 @@
             }
         }
 
+        let maxErrorsNoticeTimer = null;
+
         function showMaxErrorsNotice(score, threshold) {
             document.getElementById('meThreshold').textContent = threshold;
             document.getElementById('meScore').textContent = score;
-            document.getElementById('maxErrorsOverlay').classList.add('active');
+            const el = document.getElementById('maxErrorsOverlay');
+            el.classList.add('active');
+            clearTimeout(maxErrorsNoticeTimer);
+            maxErrorsNoticeTimer = setTimeout(closeMaxErrorsNotice, 3000);
         }
 
         function closeMaxErrorsNotice() {
@@ -1591,6 +1795,7 @@
             const binaryLength = binaryNumbers[0].length;
             for (let i = 0; i < binaryLength; i++) {
                 let row = document.createElement('div');
+                row.className = 'grid-row';
                 for (let j = 0; j < binaryNumbers.length; j++) {
                     let square = document.createElement('div');
                     square.className = 'grid-square ' + (binaryNumbers[j][i] === '1' ? 'white' : 'black');
@@ -2219,6 +2424,7 @@
 
         function dmHandleColorInput(color) {
             dmUserColorSequence.push(color);
+            dmRenderInputDisplay();
             if (dmUserColorSequence.length === dmSpanLength) {
                 dmCheckColorSequence();
             }
@@ -2226,8 +2432,28 @@
 
         function dmHandleSymbolInput(symbol) {
             dmUserSymbolSequence.push(symbol);
+            dmRenderInputDisplay();
             if (dmUserSymbolSequence.length === dmSpanLength) {
                 dmCheckSymbolSequence();
+            }
+        }
+
+        // Shows, at the top of the screen, exactly what the user has tapped
+        // so far during the color/symbol recall phase — so the user can see
+        // their taps were registered.
+        function dmRenderInputDisplay() {
+            const el = document.getElementById('dmInputDisplay');
+            if (!el) return;
+            if (dmPhase === 'color' && dmUserColorSequence.length > 0) {
+                el.innerHTML = dmUserColorSequence
+                    .map(c => `<span class="dm-input-chip" style="background-color:${c};"></span>`)
+                    .join('');
+            } else if (dmPhase === 'symbol' && dmUserSymbolSequence.length > 0) {
+                el.innerHTML = dmUserSymbolSequence
+                    .map(s => `<span class="dm-input-chip dm-input-chip-symbol">${s}</span>`)
+                    .join('');
+            } else {
+                el.innerHTML = '';
             }
         }
 
@@ -2241,6 +2467,7 @@
                 dmColorButtonsContainer.classList.add('hidden');
                 dmSymbolButtonsContainer.classList.remove('hidden');
                 dmUserColorSequence = [];
+                dmRenderInputDisplay();
             } else {
                 alert('Incorrect color sequence! Try again.');
                 dmResetPhase();
@@ -2273,11 +2500,38 @@
             dmSymbolButtonsContainer.classList.add('hidden');
             dmNextTrialButton.classList.remove('hidden');
             dmSpanDisplay.textContent = 'Span length: ' + dmSpanLength;
+            dmRenderInputDisplay();
         }
 
         function dmResetGame() {
             dmResetPhase();
             dmGenerateSequence();
+        }
+
+        // Ends the current double memory session and returns to the main menu.
+        function dmEndGame() {
+            startNewStatGame('doubleMemory');
+            showScreen('main');
+        }
+
+        // Puts the whole double-memory screen back into its initial state.
+        // Called every time the screen is opened (not just the first time).
+        function dmResetToInitial() {
+            dmSpanLength = parseInt(dmStartingSpanInput.value, 10) || 2;
+            dmSpanDisplay.textContent = 'Span length: ' + dmSpanLength;
+            dmPhase = 'show';
+            dmPhaseDisplay.textContent = 'Phase: Showing sequence';
+            dmUserColorSequence = [];
+            dmUserSymbolSequence = [];
+            dmCurrentIndex = 0;
+            dmColorButtonsContainer.classList.add('hidden');
+            dmSymbolButtonsContainer.classList.add('hidden');
+            dmNextItemButton.classList.add('hidden');
+            dmNextTrialButton.classList.add('hidden');
+            dmBeginButton.classList.remove('hidden');
+            dmDisplayContainer.style.backgroundColor = '';
+            dmSymbolDisplay.textContent = '';
+            dmRenderInputDisplay();
         }
 
         dmBeginButton.addEventListener('click', () => {
@@ -2301,29 +2555,10 @@
 
         dmSpanDisplay.textContent = 'Span length: ' + dmSpanLength;
 
-        // When doubleMemory screen is opened, ensure UI is in initial state
-        (function initDMOnce() {
-            const observer = new MutationObserver(() => {
-                if (document.getElementById('doubleMemory').classList.contains('active')) {
-                    dmSpanLength = parseInt(dmStartingSpanInput.value, 10) || 2;
-                    dmSpanDisplay.textContent = 'Span length: ' + dmSpanLength;
-                    dmPhase = 'show';
-                    dmPhaseDisplay.textContent = 'Phase: Showing sequence';
-                    dmUserColorSequence = [];
-                    dmUserSymbolSequence = [];
-                    dmCurrentIndex = 0;
-                    dmColorButtonsContainer.classList.add('hidden');
-                    dmSymbolButtonsContainer.classList.add('hidden');
-                    dmNextItemButton.classList.add('hidden');
-                    dmNextTrialButton.classList.add('hidden');
-                    dmBeginButton.classList.remove('hidden');
-                    dmDisplayContainer.style.backgroundColor = '';
-                    dmSymbolDisplay.textContent = '';
-                    observer.disconnect();
-                }
-            });
-            observer.observe(document.body, { attributes: true, subtree: true, attributeFilter: ['class'] });
-        })();
+        /* Initial sync of accent color pickers/labels for the default mode (dark + mobile) */
+        applyAccentColor();
     </script>
 </body>
 </html>
+
+
