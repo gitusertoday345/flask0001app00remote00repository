@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -206,17 +205,24 @@
             max-width: 320px;
         }
 
-        /* MONITOR (non-mobile) MODE: text scaled well down */
+        /* MONITOR (non-mobile) MODE: text scaled well down, then bumped 50% */
         body:not(.mobile) {
-            font-size: 8px;
+            font-size: 12px;
         }
 
         body:not(.mobile) button {
-            font-size: 11px;
+            font-size: 16.5px;
         }
 
         body:not(.mobile) .stats-block {
-            font-size: 8px;
+            font-size: 12px;
+        }
+
+        /* Monitor: the symbol/numerical item shown to the user (e.g. "8909")
+           should be 4x bigger than the normal monitor text size. */
+        body:not(.mobile) #symbolCurrentSequence,
+        body:not(.mobile) #numericalCurrentSequence {
+            font-size: 48px;
         }
 
         /* MOBILE MODE (default view): text bumped up */
@@ -235,12 +241,18 @@
 
         /* Keep the double-memory control buttons at their designed fixed size
            regardless of mobile/monitor text scaling, since they're laid out
-           on a fixed 80px grid and rely on a specific font size to fit. */
+           on a fixed grid and rely on a specific font size to fit. Symbol
+           buttons show text (the symbol itself), so it's sized 4x bigger
+           than before so the symbol is easy to read. */
         body.mobile .dm-color-button,
-        body.mobile .dm-symbol-button,
-        body:not(.mobile) .dm-color-button,
-        body:not(.mobile) .dm-symbol-button {
+        body:not(.mobile) .dm-color-button {
             font-size: 24px;
+            padding: 0;
+        }
+
+        body.mobile .dm-symbol-button,
+        body:not(.mobile) .dm-symbol-button {
+            font-size: 96px;
             padding: 0;
         }
 
@@ -261,50 +273,34 @@
             display: none;
         }
 
-        /* MAX ERRORS NOTICE — small floating text label that appears then
-           disappears on its own (replaces the old full-screen popup, which
-           wasn't showing reliably on some mobile browsers). */
-        .max-errors-overlay {
-            position: fixed;
-            top: 18px;
-            left: 50%;
-            transform: translateX(-50%) translateY(-16px);
-            background: rgba(231, 76, 60, 0.96);
-            color: #fff;
-            z-index: 9999;
+        /* GAME OVER / MAX ERRORS NOTICE — exact match of the design app:
+           replaces the game's play area in place (no popup, no fixed
+           positioning), showing a big "GAME OVER" message with Continue/End
+           buttons. */
+        .game-over-overlay {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             text-align: center;
-            padding: 14px 22px;
-            border-radius: 12px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.35);
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.25s ease, transform 0.25s ease;
-            max-width: 90vw;
+            padding: 40px 20px;
+            min-height: 50vh;
         }
 
-        .max-errors-overlay.active {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
+        .game-over-overlay.active {
+            display: flex;
         }
 
-        .max-errors-text {
-            font-size: 1.3em;
+        .game-over-text {
+            font-size: 4em;
             font-weight: bold;
-            letter-spacing: 0.5px;
-            margin: 0 0 4px 0;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            color: #e74c3c;
         }
 
-        .max-errors-overlay p {
-            margin: 2px 0;
-            font-size: 1em;
-        }
-
-        body.mobile .max-errors-text {
-            font-size: 1.6em;
-        }
-
-        body.mobile .max-errors-overlay p {
-            font-size: 1.2em;
+        .game-over-overlay p {
+            margin: 6px 0;
         }
 
         .set-game-container {
@@ -510,8 +506,7 @@
             font-size: 28px;
         }
 
-        /* Reverse-mode checkbox: previously near-invisible default size;
-           now sized to roughly match the width of two letters of its label. */
+        /* Reverse-mode checkbox: previously near-invisible default size. */
         #dmReverseMode {
             width: 1.4em;
             height: 1.4em;
@@ -520,12 +515,27 @@
             cursor: pointer;
         }
 
+        /* Mobile: checkbox 4x larger — about the width of two letters of its label */
+        body.mobile #dmReverseMode {
+            width: 64px;
+            height: 64px;
+        }
+
         .dm-buttons-container {
             display: grid;
             grid-template-columns: repeat(4, 80px);
             gap: 10px;
             justify-content: center;
             margin-top: 20px;
+        }
+
+        /* Mobile: pick area is more than 2x wider — stretches to the full
+           width of the section, still 4 colors/symbols per row. */
+        body.mobile .dm-buttons-container {
+            grid-template-columns: repeat(4, 1fr);
+            width: 100%;
+            gap: 14px;
+            box-sizing: border-box;
         }
 
         .dm-color-button,
@@ -538,6 +548,13 @@
             font-size: 24px;
             background-color: #eee;
             color: #000;
+        }
+
+        body.mobile .dm-color-button,
+        body.mobile .dm-symbol-button {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 1 / 1;
         }
 
         body.dark .dm-color-button,
@@ -746,6 +763,16 @@
                 </div>
             </div>
 
+            <div class="row" style="margin-top:16px;">
+                <!-- DOUBLE MEMORY -->
+                <div class="col">
+                    <h3>Double memory</h3>
+                    <label>Colors used in double memory game (comma-separated)</label>
+                    <input type="text" id="dm_colors_input"
+                           value="red, blue, green, yellow, orange, purple, pink, brown, cyan, lime">
+                </div>
+            </div>
+
             <div style="margin-top:16px;">
                 <button onclick="applyGeneratorDefaults()">Apply generator settings as defaults</button>
                 <span class="small-note">Games will use these settings and generated data.</span>
@@ -769,182 +796,266 @@
     <!-- COLOR SET GAME SCREEN -->
     <div id="colorGame" class="screen">
         <div class="card set-game-container">
-            <h2>Color set</h2>
-            <div class="set-game-top">
-                <span class="set-game-label">Info:</span>
-                <span id="colorInfoText"></span>
+
+            <div id="colorPlayArea">
+                <h2>Color set</h2>
+                <div class="set-game-top">
+                    <span class="set-game-label">Info:</span>
+                    <span id="colorInfoText"></span>
+                </div>
+                <div class="set-game-top">
+                    <span class="set-game-label">Colors shown:</span>
+                    <span id="colorCount">0</span>
+                    &nbsp;&nbsp;
+                    <span class="set-game-label">Errors:</span>
+                    <span id="colorErrorCount">0</span>
+                </div>
+                <div id="colorCurrentSequence"></div>
+                <div style="margin-top:10px;">
+                    <button onclick="colorShowWord('new')">New</button>
+                    <button onclick="colorShowWord('old')">Old</button>
+                    <button onclick="endCurrentGame('color')">End game</button>
+                </div>
             </div>
-            <div class="set-game-top">
-                <span class="set-game-label">Colors shown:</span>
-                <span id="colorCount">0</span>
-                &nbsp;&nbsp;
-                <span class="set-game-label">Errors:</span>
-                <span id="colorErrorCount">0</span>
+
+            <div id="colorGameOverOverlay" class="game-over-overlay">
+                <div class="game-over-text">GAME OVER</div>
+                <p>Reached max errors (<span id="colorGoLimit"></span>)</p>
+                <p>Score: <span id="colorGoScore"></span></p>
+                <p>Errors: <span id="colorGoErrors"></span></p>
+                <div class="button-row" style="justify-content:center; margin-top:30px;">
+                    <button onclick="resumeAfterGameOver('color')">Continue playing</button>
+                    <button onclick="endFromGameOver('color')">End game</button>
+                </div>
             </div>
-            <div id="colorCurrentSequence"></div>
-            <div style="margin-top:10px;">
-                <button onclick="colorShowWord('new')">New</button>
-                <button onclick="colorShowWord('old')">Old</button>
-                <button onclick="endCurrentGame('color')">End game</button>
-            </div>
+
         </div>
     </div>
 
     <!-- SYMBOL SET GAME SCREEN -->
     <div id="symbolGame" class="screen">
         <div class="card set-game-container">
-            <h2>Symbol set</h2>
-            <div class="set-game-top">
-                <span class="set-game-label">Info:</span>
-                <span id="symbolInfoText"></span>
+
+            <div id="symbolPlayArea">
+                <h2>Symbol set</h2>
+                <div class="set-game-top">
+                    <span class="set-game-label">Info:</span>
+                    <span id="symbolInfoText"></span>
+                </div>
+                <div class="set-game-top">
+                    <span class="set-game-label">Words shown:</span>
+                    <span id="symbolCount">0</span>
+                    &nbsp;&nbsp;
+                    <span class="set-game-label">Errors:</span>
+                    <span id="symbolErrorCount">0</span>
+                </div>
+                <p id="symbolCurrentSequence"></p>
+                <div style="margin-top:10px;">
+                    <button onclick="symbolShowWord('new')">New</button>
+                    <button onclick="symbolShowWord('old')">Old</button>
+                    <button onclick="endCurrentGame('symbol')">End game</button>
+                </div>
             </div>
-            <div class="set-game-top">
-                <span class="set-game-label">Words shown:</span>
-                <span id="symbolCount">0</span>
-                &nbsp;&nbsp;
-                <span class="set-game-label">Errors:</span>
-                <span id="symbolErrorCount">0</span>
+
+            <div id="symbolGameOverOverlay" class="game-over-overlay">
+                <div class="game-over-text">GAME OVER</div>
+                <p>Reached max errors (<span id="symbolGoLimit"></span>)</p>
+                <p>Score: <span id="symbolGoScore"></span></p>
+                <p>Errors: <span id="symbolGoErrors"></span></p>
+                <div class="button-row" style="justify-content:center; margin-top:30px;">
+                    <button onclick="resumeAfterGameOver('symbol')">Continue playing</button>
+                    <button onclick="endFromGameOver('symbol')">End game</button>
+                </div>
             </div>
-            <p id="symbolCurrentSequence"></p>
-            <div style="margin-top:10px;">
-                <button onclick="symbolShowWord('new')">New</button>
-                <button onclick="symbolShowWord('old')">Old</button>
-                <button onclick="endCurrentGame('symbol')">End game</button>
-            </div>
+
         </div>
     </div>
 
     <!-- NUMERICAL SET GAME SCREEN -->
     <div id="numericalGame" class="screen">
         <div class="card set-game-container">
-            <h2>Numerical set</h2>
-            <div class="set-game-top">
-                <span class="set-game-label">Info:</span>
-                <span id="numericalInfoText"></span>
+
+            <div id="numericalPlayArea">
+                <h2>Numerical set</h2>
+                <div class="set-game-top">
+                    <span class="set-game-label">Info:</span>
+                    <span id="numericalInfoText"></span>
+                </div>
+                <div class="set-game-top">
+                    <span class="set-game-label">Words shown:</span>
+                    <span id="numericalCount">0</span>
+                    &nbsp;&nbsp;
+                    <span class="set-game-label">Errors:</span>
+                    <span id="numericalErrorCount">0</span>
+                </div>
+                <p id="numericalCurrentSequence"></p>
+                <div style="margin-top:10px;">
+                    <button onclick="numericalShowWord('new')">New</button>
+                    <button onclick="numericalShowWord('old')">Old</button>
+                    <button onclick="endCurrentGame('numerical')">End game</button>
+                </div>
             </div>
-            <div class="set-game-top">
-                <span class="set-game-label">Words shown:</span>
-                <span id="numericalCount">0</span>
-                &nbsp;&nbsp;
-                <span class="set-game-label">Errors:</span>
-                <span id="numericalErrorCount">0</span>
+
+            <div id="numericalGameOverOverlay" class="game-over-overlay">
+                <div class="game-over-text">GAME OVER</div>
+                <p>Reached max errors (<span id="numericalGoLimit"></span>)</p>
+                <p>Score: <span id="numericalGoScore"></span></p>
+                <p>Errors: <span id="numericalGoErrors"></span></p>
+                <div class="button-row" style="justify-content:center; margin-top:30px;">
+                    <button onclick="resumeAfterGameOver('numerical')">Continue playing</button>
+                    <button onclick="endFromGameOver('numerical')">End game</button>
+                </div>
             </div>
-            <p id="numericalCurrentSequence"></p>
-            <div style="margin-top:10px;">
-                <button onclick="numericalShowWord('new')">New</button>
-                <button onclick="numericalShowWord('old')">Old</button>
-                <button onclick="endCurrentGame('numerical')">End game</button>
-            </div>
+
         </div>
     </div>
 
     <!-- GRID SET GAME SCREEN -->
     <div id="gridGame" class="screen">
         <div class="card set-game-container">
-            <h2>Grid set</h2>
-            <div class="set-game-top">
-                <span class="set-game-label">Info:</span>
-                <span id="gridInfoText"></span>
+
+            <div id="gridPlayArea">
+                <h2>Grid set</h2>
+                <div class="set-game-top">
+                    <span class="set-game-label">Info:</span>
+                    <span id="gridInfoText"></span>
+                </div>
+                <div class="set-game-top">
+                    <span class="set-game-label">Colors shown:</span>
+                    <span id="gridCount">0</span>
+                    &nbsp;&nbsp;
+                    <span class="set-game-label">Errors:</span>
+                    <span id="gridErrorCount">0</span>
+                </div>
+                <div id="gridCurrentSequence"></div>
+                <div style="margin-top:10px;">
+                    <button onclick="gridShowWord('new')">New</button>
+                    <button onclick="gridShowWord('old')">Old</button>
+                    <button onclick="endCurrentGame('grid')">End game</button>
+                </div>
             </div>
-            <div class="set-game-top">
-                <span class="set-game-label">Colors shown:</span>
-                <span id="gridCount">0</span>
-                &nbsp;&nbsp;
-                <span class="set-game-label">Errors:</span>
-                <span id="gridErrorCount">0</span>
+
+            <div id="gridGameOverOverlay" class="game-over-overlay">
+                <div class="game-over-text">GAME OVER</div>
+                <p>Reached max errors (<span id="gridGoLimit"></span>)</p>
+                <p>Score: <span id="gridGoScore"></span></p>
+                <p>Errors: <span id="gridGoErrors"></span></p>
+                <div class="button-row" style="justify-content:center; margin-top:30px;">
+                    <button onclick="resumeAfterGameOver('grid')">Continue playing</button>
+                    <button onclick="endFromGameOver('grid')">End game</button>
+                </div>
             </div>
-            <div id="gridCurrentSequence"></div>
-            <div style="margin-top:10px;">
-                <button onclick="gridShowWord('new')">New</button>
-                <button onclick="gridShowWord('old')">Old</button>
-                <button onclick="endCurrentGame('grid')">End game</button>
-            </div>
+
         </div>
     </div>
 
     <!-- VISUAL UNTIMED SCREEN -->
     <div id="visualUntimed" class="screen">
         <div class="card">
-            <h2>Visual untimed</h2>
 
-            <div class="flex-between">
-                <div>
-                    <label for="vuTileSize">Tile size (px):</label>
-                    <input type="number" id="vuTileSize" value="50" min="10">
-                    <button onclick="vuUpdateTileSize()">Set tile size</button>
+            <div id="visualUntimedPlayArea">
+                <h2>Visual untimed</h2>
+
+                <div class="flex-between">
+                    <div>
+                        <label for="vuTileSize">Tile size (px):</label>
+                        <input type="number" id="vuTileSize" value="50" min="10">
+                        <button onclick="vuUpdateTileSize()">Set tile size</button>
+                    </div>
+                    <div>
+                        <button onclick="vuGoNextLevel()">Next level</button>
+                        <button onclick="vuRestartLevel()">Restart level</button>
+                        <button onclick="endCurrentGame('visualUntimed')">End game</button>
+                        <button onclick="showScreen('main')">Back to main</button>
+                    </div>
                 </div>
-                <div>
-                    <button onclick="vuGoNextLevel()">Next level</button>
-                    <button onclick="vuRestartLevel()">Restart level</button>
-                    <button onclick="endCurrentGame('visualUntimed')">End game</button>
-                    <button onclick="showScreen('main')">Back to main</button>
+
+                <div class="info" style="margin-top:10px;">
+                    info: <span id="vuInfoLabel">1</span>
+                    &nbsp;&nbsp; errors: <span id="vuErrorLabel">0</span>
+                </div>
+
+                <div style="margin-top:10px;">
+                    <button onclick="vuCheckSequence()">Check</button>
+                    <button onclick="vuNextItems()">Show next items</button>
+                </div>
+
+                <div class="vu-grid" id="vuGrid"></div>
+                <div class="game-over" id="vuGameOver" style="display:none;"></div>
+            </div>
+
+            <div id="visualUntimedGameOverOverlay" class="game-over-overlay">
+                <div class="game-over-text">GAME OVER</div>
+                <p>Reached max errors (<span id="visualUntimedGoLimit"></span>)</p>
+                <p>Score: <span id="visualUntimedGoScore"></span></p>
+                <p>Errors: <span id="visualUntimedGoErrors"></span></p>
+                <div class="button-row" style="justify-content:center; margin-top:30px;">
+                    <button onclick="resumeAfterGameOver('visualUntimed')">Continue playing</button>
+                    <button onclick="endFromGameOver('visualUntimed')">End game</button>
                 </div>
             </div>
 
-            <div class="info" style="margin-top:10px;">
-                info: <span id="vuInfoLabel">1</span>
-                &nbsp;&nbsp; errors: <span id="vuErrorLabel">0</span>
-            </div>
-
-            <div style="margin-top:10px;">
-                <button onclick="vuCheckSequence()">Check</button>
-                <button onclick="vuNextItems()">Show next items</button>
-            </div>
-
-            <div class="vu-grid" id="vuGrid"></div>
-            <div class="game-over" id="vuGameOver" style="display:none;"></div>
         </div>
     </div>
 
     <!-- DOUBLE MEMORY SCREEN -->
     <div id="doubleMemory" class="screen">
         <div class="card">
-            <h2>Double memory</h2>
 
-            <!-- Shows the sequence of colors/symbols the user has tapped so
-                 far during recall, so they can confirm taps were registered -->
-            <div id="dmInputDisplay" class="dm-input-display"></div>
+            <div id="doubleMemoryPlayArea">
+                <h2>Double memory</h2>
 
-            <div class="flex-between">
-                <div>
-                    <label for="dmStartingSpan">Starting span length:</label>
-                    <input type="number" id="dmStartingSpan" min="2" value="2">
+                <div class="flex-between">
+                    <div>
+                        <label for="dmStartingSpan">Starting span length:</label>
+                        <input type="number" id="dmStartingSpan" min="2" value="2">
+                    </div>
+                    <div>
+                        <label class="inline">
+                            <input type="checkbox" id="dmReverseMode">
+                            Reverse mode (enter sequences in reverse order)
+                        </label>
+                    </div>
                 </div>
-                <div>
-                    <label class="inline">
-                        <input type="checkbox" id="dmReverseMode">
-                        Reverse mode (enter sequences in reverse order)
-                    </label>
+
+                <div style="margin-top:10px;">
+                    <button id="dmBeginButton">Begin</button>
+                    <button id="dmNextTrialButton" class="hidden">Next trial</button>
+                    <button onclick="dmEndGame()">End game</button>
+                    <button onclick="showScreen('main')">Back to main</button>
+                </div>
+
+                <p id="dmSpanDisplay">Span length: 2</p>
+                <p id="dmPhaseDisplay">Phase: Showing sequence</p>
+                <p id="dmErrorDisplay">Errors: 0</p>
+
+                <div class="dm-display-container" id="dmDisplayContainer">
+                    <span class="dm-symbol-text" id="dmSymbolDisplay"></span>
+                </div>
+
+                <button id="dmNextItemButton" class="hidden">Next</button>
+
+                <!-- Shows the sequence of colors/symbols the user has tapped so
+                     far during recall, right above the pick area, so they can
+                     confirm taps were registered -->
+                <div id="dmInputDisplay" class="dm-input-display"></div>
+
+                <div class="dm-buttons-container hidden" id="dmColorButtons"></div>
+                <div class="dm-buttons-container hidden" id="dmSymbolButtons"></div>
+            </div>
+
+            <div id="doubleMemoryGameOverOverlay" class="game-over-overlay">
+                <div class="game-over-text">GAME OVER</div>
+                <p>Reached max errors (<span id="doubleMemoryGoLimit"></span>)</p>
+                <p>Score: <span id="doubleMemoryGoScore"></span></p>
+                <p>Errors: <span id="doubleMemoryGoErrors"></span></p>
+                <div class="button-row" style="justify-content:center; margin-top:30px;">
+                    <button onclick="resumeAfterGameOver('doubleMemory')">Continue playing</button>
+                    <button onclick="endFromGameOver('doubleMemory')">End game</button>
                 </div>
             </div>
 
-            <div style="margin-top:10px;">
-                <button id="dmBeginButton">Begin</button>
-                <button id="dmNextTrialButton" class="hidden">Next trial</button>
-                <button onclick="dmEndGame()">End game</button>
-                <button onclick="showScreen('main')">Back to main</button>
-            </div>
-
-            <p id="dmSpanDisplay">Span length: 2</p>
-            <p id="dmPhaseDisplay">Phase: Showing sequence</p>
-
-            <div class="dm-display-container" id="dmDisplayContainer">
-                <span class="dm-symbol-text" id="dmSymbolDisplay"></span>
-            </div>
-
-            <button id="dmNextItemButton" class="hidden">Next</button>
-
-            <div class="dm-buttons-container hidden" id="dmColorButtons"></div>
-            <div class="dm-buttons-container hidden" id="dmSymbolButtons"></div>
         </div>
-    </div>
-
-    <!-- MAX ERRORS NOTICE — small text label that appears briefly then fades
-         out on its own (replaces the old full-screen popup, which wasn't
-         reliably showing on some mobile browsers, e.g. iPad mini) -->
-    <div id="maxErrorsOverlay" class="max-errors-overlay">
-        <div class="max-errors-text">Max errors reached (<span id="meThreshold"></span>)</div>
-        <p>Score: <span id="meScore"></span> — you can keep playing</p>
     </div>
 
     <script>
@@ -954,11 +1065,31 @@
         let darkMode = true;
         let mobileMode = true;
 
+        // Maps a screen id to its game key, for games that use the
+        // play-area / GAME OVER overlay pattern.
+        const screenIdToGameKey = {
+            colorGame: 'color',
+            symbolGame: 'symbol',
+            numericalGame: 'numerical',
+            gridGame: 'grid',
+            visualUntimed: 'visualUntimed',
+            doubleMemory: 'doubleMemory'
+        };
+
         function showScreen(id) {
             const screens = document.querySelectorAll('.screen');
             screens.forEach(s => s.classList.remove('active'));
             const el = document.getElementById(id);
             if (el) el.classList.add('active');
+
+            // Make sure a stale GAME OVER overlay isn't left showing from a
+            // previous visit to this game.
+            const gameKey = screenIdToGameKey[id];
+            if (gameKey) {
+                document.getElementById(gameKey + 'GameOverOverlay').classList.remove('active');
+                document.getElementById(gameKey + 'PlayArea').style.display = '';
+            }
+
             if (id === 'stats') {
                 renderStats();
             }
@@ -1252,6 +1383,15 @@
             appSettings.sequenceLength = parseInt(document.getElementById('gen_sequence_length').value, 10) || 9999;
             appSettings.notifyErrors = parseInt(document.getElementById('gen_notify_errors').value, 10) || 3;
             appSettings.visualWrongSquaresAtError = parseInt(document.getElementById('gen_visual_wrong_squares').value, 10) || 3;
+
+            const dmColorsParsed = document.getElementById('dm_colors_input').value
+                .split(',')
+                .map(s => s.trim())
+                .filter(s => s.length > 0);
+            if (dmColorsParsed.length > 0) {
+                dmColors = dmColorsParsed;
+            }
+
             alert('Generator settings applied. Games will use these settings and generated data.');
         }
 
@@ -1298,27 +1438,39 @@
 
         function checkErrorThreshold(gameKey, score, errors) {
             const threshold = appSettings.notifyErrors;
+            recordStat(gameKey, score, errors);
             if (errors === threshold) {
-                recordStat(gameKey, score, errors);
-                showMaxErrorsNotice(score, threshold);
-            } else {
-                recordStat(gameKey, score, errors);
+                showMaxErrorsNotice(gameKey, score, threshold);
             }
         }
 
-        let maxErrorsNoticeTimer = null;
-
-        function showMaxErrorsNotice(score, threshold) {
-            document.getElementById('meThreshold').textContent = threshold;
-            document.getElementById('meScore').textContent = score;
-            const el = document.getElementById('maxErrorsOverlay');
-            el.classList.add('active');
-            clearTimeout(maxErrorsNoticeTimer);
-            maxErrorsNoticeTimer = setTimeout(closeMaxErrorsNotice, 3000);
+        // Shows the GAME OVER overlay for the given game, exactly like the
+        // design app: the play area is hidden and the overlay (with
+        // Continue playing / End game buttons) takes its place in the card.
+        function showMaxErrorsNotice(gameKey, score, threshold) {
+            document.getElementById(gameKey + 'GoLimit').textContent = threshold;
+            document.getElementById(gameKey + 'GoScore').textContent = score;
+            document.getElementById(gameKey + 'GoErrors').textContent = threshold;
+            document.getElementById(gameKey + 'PlayArea').style.display = 'none';
+            document.getElementById(gameKey + 'GameOverOverlay').classList.add('active');
         }
 
-        function closeMaxErrorsNotice() {
-            document.getElementById('maxErrorsOverlay').classList.remove('active');
+        // "Continue playing" — hides the overlay and resumes the same game
+        // (score/errors are not reset, same as the design app).
+        function resumeAfterGameOver(gameKey) {
+            document.getElementById(gameKey + 'GameOverOverlay').classList.remove('active');
+            document.getElementById(gameKey + 'PlayArea').style.display = '';
+        }
+
+        // "End game" from the overlay — hides the overlay and ends the game.
+        function endFromGameOver(gameKey) {
+            document.getElementById(gameKey + 'GameOverOverlay').classList.remove('active');
+            document.getElementById(gameKey + 'PlayArea').style.display = '';
+            if (gameKey === 'doubleMemory') {
+                dmEndGame();
+            } else {
+                endCurrentGame(gameKey);
+            }
         }
 
         /***********************
@@ -2360,10 +2512,13 @@
         const dmNextItemButton = document.getElementById('dmNextItemButton');
         const dmSpanDisplay = document.getElementById('dmSpanDisplay');
         const dmPhaseDisplay = document.getElementById('dmPhaseDisplay');
+        const dmErrorDisplay = document.getElementById('dmErrorDisplay');
         const dmStartingSpanInput = document.getElementById('dmStartingSpan');
         const dmReverseModeCheckbox = document.getElementById('dmReverseMode');
 
-        const dmColors = ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown', 'cyan', 'lime'];
+        // dmColors is mutable: the "Colors used in double memory game" field
+        // in the Data generator screen can replace this list.
+        let dmColors = ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown', 'cyan', 'lime'];
         const dmSymbols = ['!', '?', '@', '#', ':', '$', '%', '^', '&', '*', '( )', '+', '=', '-', '{ }', '/'];
 
         let dmColorSequence = [];
@@ -2371,6 +2526,7 @@
         let dmUserColorSequence = [];
         let dmUserSymbolSequence = [];
         let dmSpanLength = 2;
+        let dmErrorCount = 0;
         let dmCurrentIndex = 0;
         let dmPhase = 'show'; // 'show', 'color', 'symbol'
 
@@ -2469,6 +2625,9 @@
                 dmUserColorSequence = [];
                 dmRenderInputDisplay();
             } else {
+                dmErrorCount++;
+                dmErrorDisplay.textContent = 'Errors: ' + dmErrorCount;
+                checkErrorThreshold('doubleMemory', dmSpanLength, dmErrorCount);
                 alert('Incorrect color sequence! Try again.');
                 dmResetPhase();
             }
@@ -2483,9 +2642,11 @@
                 alert('Correct! Moving to span length ' + dmSpanLength);
                 recordStat('doubleMemory', dmSpanLength, 0);
             } else {
+                dmErrorCount++;
+                dmErrorDisplay.textContent = 'Errors: ' + dmErrorCount;
+                checkErrorThreshold('doubleMemory', dmSpanLength, dmErrorCount);
                 alert('Incorrect symbol sequence! Starting over.');
                 dmSpanLength = Math.max(2, dmSpanLength - 1);
-                recordStat('doubleMemory', dmSpanLength, 1);
             }
             dmResetGame();
         }
@@ -2521,6 +2682,8 @@
             dmSpanDisplay.textContent = 'Span length: ' + dmSpanLength;
             dmPhase = 'show';
             dmPhaseDisplay.textContent = 'Phase: Showing sequence';
+            dmErrorCount = 0;
+            dmErrorDisplay.textContent = 'Errors: 0';
             dmUserColorSequence = [];
             dmUserSymbolSequence = [];
             dmCurrentIndex = 0;
@@ -2537,6 +2700,8 @@
         dmBeginButton.addEventListener('click', () => {
             dmSpanLength = parseInt(dmStartingSpanInput.value, 10) || 2;
             dmSpanDisplay.textContent = 'Span length: ' + dmSpanLength;
+            dmErrorCount = 0;
+            dmErrorDisplay.textContent = 'Errors: 0';
             dmBeginButton.classList.add('hidden');
             dmNextTrialButton.classList.remove('hidden');
             dmInitializeButtons();
