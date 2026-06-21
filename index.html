@@ -250,9 +250,17 @@
             padding: 0;
         }
 
-        body.mobile .dm-symbol-button,
-        body:not(.mobile) .dm-symbol-button {
+        body.mobile .dm-symbol-button {
             font-size: 96px;
+            padding: 0;
+        }
+
+        /* Monitor mode: the pick box is a fixed 80x80px (see .dm-color-button,
+           .dm-symbol-button below), so the symbol must be sized to fit it -
+           previously it shared the 96px mobile size and overflowed the box.
+           Halved to 48px per request. */
+        body:not(.mobile) .dm-symbol-button {
+            font-size: 48px;
             padding: 0;
         }
 
@@ -337,9 +345,11 @@
         body.mobile #colorCurrentSequence .color-square {
             flex: 1 1 0;
             max-width: 150px;
-            height: auto;
-            aspect-ratio: 1 / 1;
             margin: 0;
+            /* Height is set in JS (see squareUpElements) instead of using
+               aspect-ratio, since aspect-ratio is unsupported on iOS < 15
+               (e.g. iPad mini 2 / iOS 12.5). Without this, the square
+               collapses to 0 height and only its border is visible. */
         }
 
         .grid-square {
@@ -548,13 +558,22 @@
             font-size: 24px;
             background-color: #eee;
             color: #000;
+            overflow: hidden;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
         }
 
         body.mobile .dm-color-button,
         body.mobile .dm-symbol-button {
             width: 100%;
-            height: auto;
-            aspect-ratio: 1 / 1;
+            /* Height is set in JS (see squareUpElements) instead of using
+               aspect-ratio, since aspect-ratio is unsupported on iOS < 15
+               (e.g. iPad mini 2 / iOS 12.5). Without this, the button
+               collapses to 0 height and only its border is visible -
+               this was the "no colors, just thin lines" bug. */
         }
 
         body.dark .dm-color-button,
@@ -1117,6 +1136,7 @@
             mobileMode = !mobileMode;
             document.body.classList.toggle('mobile', mobileMode);
             applyAccentColor();
+            refreshSquaredElements();
         }
 
         /***********************
@@ -1167,6 +1187,39 @@
          * STATISTICS
          ***********************/
         // stats[gameKey] = array of games; each game is array of {score, errors}
+        /***********************
+         * SQUARE-UP HELPER (iOS 12.5 compatibility)
+         *
+         * Several elements (color-set squares, double-memory color/symbol
+         * pick buttons) need to be perfectly square at a width set by flex
+         * layout. Modern CSS would use `aspect-ratio` for this, but that
+         * property is not supported on iOS < 15 (e.g. iPad mini 2 / iOS
+         * 12.5) - on those devices the element's height collapsed to 0 and
+         * only its border was visible ("thin lines", no fill color).
+         * Instead we measure the rendered width in JS and apply it as an
+         * explicit pixel height, which works on every browser.
+         ***********************/
+        function squareUpElements(selector) {
+            document.querySelectorAll(selector).forEach(function (el) {
+                if (el.offsetParent === null) return; // skip hidden elements
+                const w = el.offsetWidth;
+                if (w > 0) {
+                    el.style.height = w + 'px';
+                }
+            });
+        }
+
+        function refreshSquaredElements() {
+            squareUpElements('#colorCurrentSequence .color-square');
+            squareUpElements('.dm-color-button, .dm-symbol-button');
+        }
+
+        window.addEventListener('resize', refreshSquaredElements);
+        window.addEventListener('orientationchange', function () {
+            // Give the browser a moment to finish the rotation layout pass.
+            setTimeout(refreshSquaredElements, 150);
+        });
+
         const stats = {
             color: [],
             symbol: [],
@@ -1433,6 +1486,22 @@
                 vuGoNextLevel();
                 return;
             }
+
+            // Record the current score/errors for the set-memory games when
+            // "End game" is pressed. Previously a stat was only recorded
+            // when an error occurred (via checkErrorThreshold), so a game
+            // played to 0 errors and then ended was never saved at all.
+            const finalScoreByGame = {
+                color: [colorDisplayedCount, colorErrorCount],
+                symbol: [symbolDisplayedCount, symbolErrorCount],
+                numerical: [numericalDisplayedCount, numericalErrorCount],
+                grid: [gridDisplayedCount, gridErrorCount]
+            };
+            if (finalScoreByGame[gameKey]) {
+                const [score, errors] = finalScoreByGame[gameKey];
+                recordStat(gameKey, score, errors);
+            }
+
             showScreen('main');
         }
 
@@ -1564,6 +1633,7 @@
                 div.style.backgroundColor = c;
                 container.appendChild(div);
             });
+            refreshSquaredElements();
         }
 
         function colorShowWord(buttonType) {
@@ -2565,6 +2635,7 @@
                 dmPhase = 'color';
                 dmPhaseDisplay.textContent = 'Phase: Colors';
                 dmColorButtonsContainer.classList.remove('hidden');
+                refreshSquaredElements();
                 return;
             }
 
@@ -2624,6 +2695,7 @@
                 dmSymbolButtonsContainer.classList.remove('hidden');
                 dmUserColorSequence = [];
                 dmRenderInputDisplay();
+                refreshSquaredElements();
             } else {
                 dmErrorCount++;
                 dmErrorDisplay.textContent = 'Errors: ' + dmErrorCount;
@@ -2671,7 +2743,11 @@
 
         // Ends the current double memory session and returns to the main menu.
         function dmEndGame() {
-            startNewStatGame('doubleMemory');
+            // Previously this called startNewStatGame() instead of
+            // recordStat(), so the current span/error count was never saved
+            // when "End game" was pressed - the same "not saved at 0
+            // errors" bug as the other games.
+            recordStat('doubleMemory', dmSpanLength, dmErrorCount);
             showScreen('main');
         }
 
